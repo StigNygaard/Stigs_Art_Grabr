@@ -2,7 +2,7 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2017.08.01.0
+// @version     2017.08.01.1
 // @match       *://*.allmusic.com/*
 // @match       *://*.bandcamp.com/*
 // @match       *://*.itunes.apple.com/*
@@ -60,7 +60,7 @@
 
 // CHANGELOG - The most important updates/versions:
 var changelog = [
-    {version: '2017.08.01.0', description: 'Jusat moving source to GitHub repository...'},
+    {version: '2017.08.01.1', description: 'Nothing new. Just moving development source to a GitHub repository: https://github.com/StigNygaard/Stigs_Art_Grabr'},
     {version: '2017.06.26.1', description: 'Currently grabbing covers directly from the iTunes website doesn\'t work when using Stig\'s Art Grabr as a *bookmarklet*. It does however still works with script installed and used as a *userscript*. Also grabbing iTunes covers indirectly via musicdiner.com, fnd.io and labs.stephenou.com/itunes should work both ways.'},
     {version: '2017.06.23.0', description: 'Once again adapting to iTunes site changes. But fnd.io, stephenou.com/itunes and musicdiner.com also works for itunes cover art...'},
     {version: '2016.11.21.0', description: 'Quick fix to adapt to iTunes changes. Will try to fix fnd.io, stephenou.com and musicdiner.com later...'},
