@@ -2,7 +2,7 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2017.08.01.1
+// @version     2017.10.01.0
 // @match       *://*.allmusic.com/*
 // @match       *://*.bandcamp.com/*
 // @match       *://*.itunes.apple.com/*
@@ -48,6 +48,7 @@
 // @homepageURL http://www.rockland.dk/userscript/misc/artgrab/
 // @supportURL  http://www.rockland.dk/userscript/misc/artgrab/
 // @grant       GM_registerMenuCommand
+// @grant       GM.setValue
 // @noframes
 // ==/UserScript==
 
@@ -59,7 +60,8 @@
 // javascript:(function(){document.body.appendChild(document.createElement("script")).src="https://greasyfork.org/scripts/20771-stig-s-art-grabr/code/Stig's%20Art%20Grabr.user.js?t="+(new Date()).getTime();}())
 
 // CHANGELOG - The most important updates/versions:
-var changelog = [
+let changelog = [
+    {version: '2017.10.09.0', description: 'Adding HTML5 contextmenu (Currently only supported in Firefox). Handy for the upcoming new Greasemonkey 4 WebExtension which probably won\'t support the normal userscript commands menus.'},
     {version: '2017.08.01.1', description: 'Nothing new. Just moving development source to a GitHub repository: https://github.com/StigNygaard/Stigs_Art_Grabr'},
     {version: '2017.06.26.1', description: 'Currently grabbing covers directly from the iTunes website doesn\'t work when using Stig\'s Art Grabr as a *bookmarklet*. It does however still works with script installed and used as a *userscript*. Also grabbing iTunes covers indirectly via musicdiner.com, fnd.io and labs.stephenou.com/itunes should work both ways.'},
     {version: '2017.06.23.0', description: 'Once again adapting to iTunes site changes. But fnd.io, stephenou.com/itunes and musicdiner.com also works for itunes cover art...'},
@@ -74,14 +76,14 @@ var changelog = [
 ];
 
 function runGrabr() {
-    var DEBUG = false;
-    var log = function(s) {
+    let DEBUG = false;
+    let log = function(s) {
         if (DEBUG && window.console) {
             window.console.log(s);
         }
     };
     // [ page pattern, search for img patterns, replace this, with this ]
-    var a = [[/45cat\./, /-s\.jpg/i, /-s\.jpg/gi, ".jpg"],
+    let a = [[/45cat\./, /-s\.jpg/i, /-s\.jpg/gi, ".jpg"],
         [/45cat\./, /-s\.png/i, /-s\.png/gi, ".png"],
         [/allmusic\./, /\/JPG_\d{3}\//i, /\/JPG_\d{3}\//gi, "/JPG_1080/"],
         [/amazon\./, /\._[A-Z]{2}\d{3}_[\w_,-]*\.jpg/i, /\._[A-Z]{2}\d{3}_[\w_,-]*\.jpg/gi, ".jpg"],
@@ -108,7 +110,7 @@ function runGrabr() {
         [/soundcloud\./, /t\d\d0x\d\d0\./i, /t\d\d0x\d\d0\./gi, "original."],
         [/play\.google\.com/, /googleusercontent\.com.*\=w\d{3}/, /\=w\d{3}$/, "=w1200"]];
         /* https://affiliate.itunes.apple.com/resources/documentation/itunes-store-web-service-search-api/ */
-    var aEv = function (e,ev,f,c) {
+    let aEv = function (e,ev,f,c) {
         c=(c)?c:false;
         if(e.addEventListener) {
             e.addEventListener(ev,f,c);
@@ -118,7 +120,7 @@ function runGrabr() {
             e["on"+ev]=f;
         }
     };
-    var w = null, n = 0, m = 20, d = document, i=0;
+    let w = null, n = 0, m = 20, d = document, i=0;
     // soundcloud pre-burner
     if (d.location.hostname.search(/soundcloud\./) > -1) {
         spans = document.querySelectorAll("span[style*=background-image]");
@@ -142,11 +144,11 @@ function runGrabr() {
     }
     log('Activated while on ' + d.location.hostname);
     o:
-    for (var v = 0; v < a.length; v++) {
+    for (let v = 0; v < a.length; v++) {
         if (d.location.hostname.search(a[v][0]) > -1) {
             log('Running on ' + d.location.hostname);
             w = a[v];
-            var l = d.getElementsByTagName("img");
+            let l = d.getElementsByTagName("img");
             if (l) {
                 log('Found ' + l.length + ' image tags');
                 for (i = 0; i < l.length; i++) {
@@ -190,10 +192,23 @@ function runGrabr() {
     return void(0);
 }
 
-if (typeof GM_registerMenuCommand === 'function') {
-    // running as userscript - setting up menu item
-    GM_registerMenuCommand("Search big size cover art", runGrabr, "a");
+function contextMenuSupported() { // Ugh, it's a bit ugly, but...
+    let oMenu = document.createElement("menu");
+    return (oMenu.type !== "undefined"); // type="list|context|toolbar" if supported ?
+}
+
+if (typeof GM_registerMenuCommand === 'function' || (typeof GM === 'object' && typeof GM.setValue === 'function')) {
+    // Running as a userscript - setting up menu item...
+    if (typeof GM_registerMenuCommand === 'function') { // Supported by most userscript extensions, but NOT the upcoming Greasemonkey 4 WebExtension with new asynchronous API!...
+        GM_registerMenuCommand("Search big size cover art", runGrabr, "a");
+    }
+    if (contextMenuSupported()) { // Setup HTML5 contextmenu - Currently only supported in Firefox!?...
+        let cmenu = '<menu type="context" id="grabrmenu"><menu label="Stig\'s Art Grabr"><menuitem id="rungrabr" label="Search big size cover art" /></menu></menu>';
+        document.body.insertAdjacentHTML('beforeend',cmenu);
+        document.getElementById('rungrabr').addEventListener('click',runGrabr, false);
+        document.body.setAttribute('contextmenu', 'grabrmenu');
+    }
 } else {
-    // started from bookmarklet
+    // Started from bookmarklet!
     runGrabr();
 }
