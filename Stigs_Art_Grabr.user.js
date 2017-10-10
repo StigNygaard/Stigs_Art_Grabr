@@ -2,7 +2,7 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2017.10.01.0
+// @version     2017.10.10.0
 // @match       *://*.allmusic.com/*
 // @match       *://*.bandcamp.com/*
 // @match       *://*.itunes.apple.com/*
