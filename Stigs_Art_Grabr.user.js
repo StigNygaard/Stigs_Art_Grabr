@@ -2,7 +2,7 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2017.10.10.0
+// @version     2017.10.10.1
 // @match       *://*.allmusic.com/*
 // @match       *://*.bandcamp.com/*
 // @match       *://*.itunes.apple.com/*
@@ -206,7 +206,7 @@ function contextMenuSupported() { // Ugh, it's a bit ugly (and maybe unnecessary
 if (typeof GM_info === 'object' || (typeof GM === 'object' && typeof GM.info === 'object')) {
     // Running as a userscript - setting up menu items...
     if (!document.getElementById('grabrlog')) {
-        var gmw = '<div id="grabrlog" style="position:fixed;left:0;right:0;top:10em;z-index:3000009;margin-left:auto;margin-right:auto;min-height:8em;width:50%;background-color:#eee;color:#111;border-radius:5px;display:none;padding:1em"><b>Stig\'s Art Grabr changelog</b><ul></ul></div>';
+        let gmw = '<div id="grabrlog" style="position:fixed;left:0;right:0;top:10em;z-index:3000009;margin-left:auto;margin-right:auto;min-height:8em;width:50%;background-color:#eee;color:#111;border-radius:5px;display:none;padding:1em"><b>Stig\'s Art Grabr changelog</b><ul></ul></div>';
         document.body.insertAdjacentHTML('beforeend',gmw);
         document.getElementById('grabrlog').addEventListener('click',function(){this.style.display = 'none';return false;}, false);
         let list = document.querySelector('div#grabrlog ul');
