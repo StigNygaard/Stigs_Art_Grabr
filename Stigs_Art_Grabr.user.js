@@ -2,7 +2,7 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2017.10.10.1
+// @version     2017.10.14.0
 // @match       *://*.allmusic.com/*
 // @match       *://*.bandcamp.com/*
 // @match       *://*.itunes.apple.com/*
@@ -60,9 +60,53 @@
 // To run this script as a bookmarklet (running latest GreasyFork hosted version), use:
 // javascript:(function(){document.body.appendChild(document.createElement("script")).src="https://greasyfork.org/scripts/20771-stig-s-art-grabr/code/Stig's%20Art%20Grabr.user.js?t="+(new Date()).getTime();}())
 
+
+
+// SCL - Stig's Synchronious Common Library.
+// A fast and easy way to Greasemonkey 4 compatibility.
+var scl = scl || {
+    // work-in-progress...
+    info: (typeof GM_info === 'object' ? GM_info : (typeof GM === 'object' && typeof GM.info === 'object' ? GM.info : null) ),
+    registerMenuCommand: function(caption, commandFunc, accessKey) {
+        if (typeof GM_registerMenuCommand === 'function') { // Supported by most userscript extensions, but currently NOT in the upcoming Greasemonkey 4 WebExtension and it's new asynchronous API!
+            GM_registerMenuCommand(caption, commandFunc, accessKey);
+        } else if (typeof GM === 'object' && typeof GM.registerMenuCommand === 'function') { // Will, probably NOT be implemented by the upcoming Greasemonkey 4 WebExtension, but if?...
+            GM.registerMenuCommand(caption, commandFunc, accessKey);
+        }
+        if (scl.contextMenuSupported()) { // Setup HTML5 contextmenu - Currently only supported in Firefox...
+            let menuElem = null;
+            if (document.body.contextmenu) {
+                menuElem = document.querySelector('menu#'+document.body.contextmenu); // type=context
+            }
+            if (!menuElem) {
+                menuElem = document.createElement("menu");
+                menuElem.setAttribute('type', 'context');
+                menuElem.id = 'sclmenu';
+                document.body.appendChild(menuElem);
+            }
+            document.body.setAttribute('contextmenu', menuElem.id);
+            let scriptMenu = document.querySelector('menu#menu'+(scl.info.script.name).replace(/[^\w]+/g,''));
+            if (!scriptMenu) {
+                scriptMenu = document.createElement("menu");
+                scriptMenu.setAttribute('label', scl.info.script.name);
+                scriptMenu.id = 'menu'+(scl.info.script.name).replace(/[^\w]+/g,'');
+                menuElem.appendChild(scriptMenu);
+            }
+            let menuItem = document.createElement("menuitem");
+            menuItem.setAttribute('label', caption);
+            scriptMenu.appendChild(menuItem);
+            menuItem.addEventListener('click',commandFunc, false);
+        }
+    },
+    contextMenuSupported: function() { // Ugh, it's a bit ugly (and maybe unnecessary), but...
+        let oMenu = document.createElement("menu");
+        return (oMenu.type !== "undefined"); // type="list|context|toolbar" if supported ?
+    }
+};
+
 // CHANGELOG - The most important updates/versions:
 let changelog = [
-    {version: '2017.10.10.0', description: 'Optimizing HTML5 contextmenu (Currently only supported in Firefox). Also adding changelog to menu.'},
+    {version: '2017.10.14.0', description: 'Fix for iTunes. Optimizing HTML5 contextmenu (Currently only supported in Firefox). Also adding changelog to menu.'},
     {version: '2017.10.09.0', description: 'Adding HTML5 contextmenu (Currently only supported in Firefox). Handy for the upcoming new Greasemonkey 4 WebExtension which probably won\'t support the normal userscript commands menu.'},
     {version: '2017.08.01.1', description: 'Nothing new. Just moving development source to a GitHub repository: https://github.com/StigNygaard/Stigs_Art_Grabr'},
     {version: '2017.06.26.1', description: 'Currently grabbing covers directly from the iTunes website doesn\'t work when using Stig\'s Art Grabr as a *bookmarklet*. It does however still works with script installed and used as a *userscript*. Also grabbing iTunes covers indirectly via musicdiner.com, fnd.io and labs.stephenou.com/itunes should work both ways.'},
@@ -95,20 +139,21 @@ function runGrabr() {
         [/cdbaby\./, /images\..*_small\.[jpgn]{3}/i, /_small\./gi, "."],
         [/cdbaby\./, /images\..*\.jpg/i, /\.jpg/gi, "_large.jpg"],
         [/cdbaby\./, /images\..*\.png/i, /\.png/gi, "_large.png"],
-        [/fnd\.io/, /\/\d{2,}x\d{2,}bb/i, /\/\d{2,}x\d{2,}bb/gi, "/99999999x99999999bb-100"],
-        [/itunes\.apple\./, /1\d0x1\d0\./i, /^(.*\/\/)\w+(\d+.mzstatic.com)\/\w+\/\w+\/(\w+\/\w+\/\w+\/\w+\/\w+\/[\w-]+)\/cover\d+x\d+.jpeg$/i, "$1is$2/image/thumb/$3/source/99999999x99999999bb-100.jpg"], // replace regexp from jesus2099
-        [/itunes\.apple\./, /1\d0x1\d0bb\.jpg/i, /\/source\/\d+x\d+bb\.jpg/i, "/source/99999999x99999999bb-100.jpg"], // fix 2016-11-21
-        [/itunes\.apple\./, /\d{2,}x\d+\w+\.jpe?g/i, /\/source\/\d+x\d+\w+\.jpe?g/i, "/source/99999999x99999999bb-100.jpg"], // fix 2017-06-23
+        [/fnd\.io/, /\/\d{2,}x\d{2,}bb/i, /\/\d{2,}x\d{2,}bb/gi, "/999999x999999bb-100"],
+        //[/itunes\.apple\./, /1\d0x1\d0\./i, /^(.*\/\/)\w+(\d+.mzstatic.com)\/\w+\/\w+\/(\w+\/\w+\/\w+\/\w+\/\w+\/[\w-]+)\/cover\d+x\d+.jpeg$/i, "$1is$2/image/thumb/$3/source/999999x999999bb-100.jpg"], // replace regexp from jesus2099
+        //[/itunes\.apple\./, /1\d0x1\d0bb\.jpg/i, /\/source\/\d+x\d+bb\.jpg/i, "/source/999999x999999bb-100.jpg"], // fix 2016-11-21
+        //[/itunes\.apple\./, /\d{2,}x\d+\w+\.jpe?g/i, /\/source\/\d+x\d+\w+\.jpe?g/i, "/source/999999x999999bb-100.jpg"], // fix 2017-06-23
+        [/itunes\.apple\./, /\/\d+x\d+w?\.jpe?g$/i, /\/\d+x\d+w?\.jpe?g$/i, "/999999x999999bb-100.jpg"], // fix 2017-10-14
         [/jamendo\./, /1\.\d00\.jpg/i, /1\.\d00\.jpg/gi, "1.0.jpg"],
         [/jamendo\./, /1\.\d00\.png/i, /1\.\d00\.png/gi, "1.0.png"],
-        [/labs\.stephenou\.com/, /\/\d{2,3}x\d{2,3}bb/i, /\/\d{2,3}x\d{2,3}bb/gi, "/99999999x99999999bb-100"],
+        [/labs\.stephenou\.com/, /\/\d{2,3}x\d{2,3}bb/i, /\/\d{2,3}x\d{2,3}bb/gi, "/999999x999999bb-100"],
         [/last(fm)?\.[a-z]{2,3}/, /\.lst\.fm\/i\/u\/[a-zA-Z]*\d{2,}\w*\//i, /\.lst\.fm\/i\/u\/[a-z]*\d{2,}\w*\//gi, ".lst.fm/i/u/"],
         [/last(fm)?\.[a-z]{2,3}/, /\.akamaized\.net\/i\/u\/[a-zA-Z]*\d{2,}\w*\//i, /\.akamaized\.net\/i\/u\/[a-z]*\d{2,}\w*\//gi, ".akamaized.net/i/u/"],
         [/magnatune\./, /cover_\d{2,3}\./i, /cover_\d{2,3}\./gi, "cover."],
         [/musicbrainz\.org/, /_thumb\d{3}\./i, /_thumb\d{3}\./gi, "."],
         [/musicbrainz\.org/, /-\d{3}\.jpg/i, /-\d{3}\.jpg/gi, ".jpg"],
         [/musicbrainz\.org/, /-\d{3}\.png/i, /-\d{3}\.png/gi, ".png"],
-        [/musicdiner\./, /\/\d{2,3}x\d{2,3}bb/i, /\/\d{2,3}x\d{2,3}bb/gi, "/99999999x99999999bb-100"],
+        [/musicdiner\./, /\/\d{2,3}x\d{2,3}bb/i, /\/\d{2,3}x\d{2,3}bb/gi, "/999999x999999bb-100"],
         [/soundcloud\./, /t\d\d0x\d\d0\./i, /t\d\d0x\d\d0\./gi, "original."],
         [/play\.google\.com/, /googleusercontent\.com.*\=w\d{3}/, /\=w\d{3}$/, "=w1200"]];
         /* https://affiliate.itunes.apple.com/resources/documentation/itunes-store-web-service-search-api/ */
@@ -139,8 +184,8 @@ function runGrabr() {
     if (d.location.hostname.search(/itunes\.apple\./) > -1) {
         imgs = document.querySelectorAll("picture>img");
         for (i = 0; i < imgs.length; i++) {
-            imgs[i].style.maxWidth="200px";
-            imgs[i].style.maxHeight="200px";
+            imgs[i].style.maxWidth="300px";
+            imgs[i].style.maxHeight="300px";
             imgs[i].parentNode.parentNode.replaceChild(imgs[i], imgs[i].parentNode);
         }
     }
@@ -198,11 +243,6 @@ function showGrabrLog() {
     document.getElementById('grabrlog').style.display = 'block';
 }
 
-function contextMenuSupported() { // Ugh, it's a bit ugly (and maybe unnecessary), but...
-    let oMenu = document.createElement("menu");
-    return (oMenu.type !== "undefined"); // type="list|context|toolbar" if supported ?
-}
-
 if (typeof GM_info === 'object' || (typeof GM === 'object' && typeof GM.info === 'object')) {
     // Running as a userscript - setting up menu items...
     if (!document.getElementById('grabrlog')) {
@@ -211,32 +251,13 @@ if (typeof GM_info === 'object' || (typeof GM === 'object' && typeof GM.info ===
         document.getElementById('grabrlog').addEventListener('click',function(){this.style.display = 'none';return false;}, false);
         let list = document.querySelector('div#grabrlog ul');
         let lcontent = '';
-        for (i=0; i<changelog.length; i++) {
+        for (i=0; i<Math.min(8,changelog.length); i++) {
             lcontent += '<li><i>'+changelog[i].version+'</i> - '+changelog[i].description+'</li>';
         }
         list.insertAdjacentHTML('beforeend', lcontent);
     }
-    if (typeof GM_registerMenuCommand === 'function') { // Supported by most userscript extensions, but NOT the upcoming Greasemonkey 4 WebExtension with new asynchronous API!...
-        GM_registerMenuCommand("Search big size cover art", runGrabr, "a");
-        GM_registerMenuCommand("Stig's Art Grabr changelog", showGrabrLog, "l");
-    }
-    if (contextMenuSupported()) { // Setup HTML5 contextmenu - Currently only supported in Firefox!?...
-        let menuElem = null;
-        if (document.body.contextmenu) {
-            menuElem = document.querySelector('menu#'+document.body.contextmenu); // type=context
-        }
-        if (!menuElem) {
-            menuElem = document.createElement("menu");
-            menuElem.setAttribute('type', 'context');
-            menuElem.id = 'grabrmenu';
-            document.body.appendChild(menuElem);
-        }
-        let menuitems = '<menu label="Stig\'s Art Grabr"><menuitem id="rungrabr" label="Search big size cover art"></menuitem><menuitem id="showgrabrlog" label="Changelog"></menuitem></menu>';
-        menuElem.insertAdjacentHTML('afterbegin', menuitems);
-        document.getElementById('rungrabr').addEventListener('click',runGrabr, false);
-        document.getElementById('showgrabrlog').addEventListener('click',showGrabrLog, false);
-        document.body.setAttribute('contextmenu', menuElem.id);
-    }
+    scl.registerMenuCommand("Search big size cover art", runGrabr, "a");
+    scl.registerMenuCommand("Changelog", showGrabrLog, "l");
 } else {
     // Started from bookmarklet!
     runGrabr();
