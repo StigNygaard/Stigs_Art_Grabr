@@ -2,7 +2,7 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2017.10.14.0
+// @version     2017.10.14.1
 // @match       *://*.allmusic.com/*
 // @match       *://*.bandcamp.com/*
 // @match       *://*.itunes.apple.com/*
@@ -75,8 +75,8 @@ var scl = scl || {
         }
         if (scl.contextMenuSupported()) { // Setup HTML5 contextmenu - Currently only supported in Firefox...
             let menuElem = null;
-            if (document.body.contextmenu) {
-                menuElem = document.querySelector('menu#'+document.body.contextmenu); // type=context
+            if (document.body.getAttribute('contextmenu')) {
+                menuElem = document.querySelector('menu#'+document.body.getAttribute('contextmenu')); // type=context
             }
             if (!menuElem) {
                 menuElem = document.createElement("menu");
@@ -85,11 +85,11 @@ var scl = scl || {
                 document.body.appendChild(menuElem);
             }
             document.body.setAttribute('contextmenu', menuElem.id);
-            let scriptMenu = document.querySelector('menu#menu'+(scl.info.script.name).replace(/[^\w]+/g,''));
+            let scriptMenu = document.querySelector('menu#menu'+scl.getScriptIdentifier());
             if (!scriptMenu) {
                 scriptMenu = document.createElement("menu");
-                scriptMenu.setAttribute('label', scl.info.script.name);
-                scriptMenu.id = 'menu'+(scl.info.script.name).replace(/[^\w]+/g,'');
+                scriptMenu.setAttribute('label', scl.getScriptName());
+                scriptMenu.id = 'menu'+scl.getScriptIdentifier();
                 menuElem.appendChild(scriptMenu);
             }
             let menuItem = document.createElement("menuitem");
@@ -101,6 +101,22 @@ var scl = scl || {
     contextMenuSupported: function() { // Ugh, it's a bit ugly (and maybe unnecessary), but...
         let oMenu = document.createElement("menu");
         return (oMenu.type !== "undefined"); // type="list|context|toolbar" if supported ?
+    },
+    getScriptName: function() {
+        if (scl.info.script.name) {
+            return scl.info.script.name;
+        } else {
+            return 'Userscript';
+        }
+    },
+    getScriptIdentifier() {
+        if (scl.info.script.namespace) {
+            return scl.info.script.namespace.replace(/[^\w]+/g,'x');
+        } else if (scl.info.script.name) {
+            return scl.info.script.name.replace(/[^\w]+/g,'x');
+        } else {
+            alert('Error: Script Namespace or Name not found (Missing @grant for GM_info/GM.info?)');
+        }
     }
 };
 
