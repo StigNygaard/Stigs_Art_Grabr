@@ -2,7 +2,10 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2017.10.14.1
+// @version     2017.10.29.0
+// @author      Stig Nygaard, http://www.rockland.dk
+// @homepageURL http://www.rockland.dk/userscript/misc/artgrab/
+// @supportURL  http://www.rockland.dk/userscript/misc/artgrab/
 // @match       *://*.allmusic.com/*
 // @match       *://*.bandcamp.com/*
 // @match       *://*.itunes.apple.com/*
@@ -44,84 +47,36 @@
 // @match       *://*.cdbaby.com/*
 // @match       *://*.jamendo.com/*
 // @match       *://*.magnatune.com/*
-// @author      Stig Nygaard, http://www.rockland.dk
-// @homepageURL http://www.rockland.dk/userscript/misc/artgrab/
-// @supportURL  http://www.rockland.dk/userscript/misc/artgrab/
 // @grant       GM_registerMenuCommand
-// @grant       GM_info
-// @grant       GM.info
+// @require     https://greasyfork.org/scripts/34527/code/GMCommonAPI.js?version=226826
 // @noframes
 // ==/UserScript==
 
-// Partly based on tips at http://wiki.musicbrainz.org/User:Nikki/CAA and on itunes tip from
-// MusicBrainz/GitHub/GreasyFork user jesus2099 who has made a lot of userscripts (especially
-// for MusicBrainz users): https://greasyfork.org/users/2206-jesus2099
-
-// To run this script as a bookmarklet (running latest GreasyFork hosted version), use:
-// javascript:(function(){document.body.appendChild(document.createElement("script")).src="https://greasyfork.org/scripts/20771-stig-s-art-grabr/code/Stig's%20Art%20Grabr.user.js?t="+(new Date()).getTime();}())
-
-
-
-// SCL - Stig's Synchronious Common Library.
-// A fast and easy way to Greasemonkey 4 compatibility.
-var scl = scl || {
-    // work-in-progress...
-    info: (typeof GM_info === 'object' ? GM_info : (typeof GM === 'object' && typeof GM.info === 'object' ? GM.info : null) ),
-    registerMenuCommand: function(caption, commandFunc, accessKey) {
-        if (typeof GM_registerMenuCommand === 'function') { // Supported by most userscript extensions, but currently NOT in the upcoming Greasemonkey 4 WebExtension and it's new asynchronous API!
-            GM_registerMenuCommand(caption, commandFunc, accessKey);
-        } else if (typeof GM === 'object' && typeof GM.registerMenuCommand === 'function') { // Will, probably NOT be implemented by the upcoming Greasemonkey 4 WebExtension, but if?...
-            GM.registerMenuCommand(caption, commandFunc, accessKey);
-        }
-        if (scl.contextMenuSupported()) { // Setup HTML5 contextmenu - Currently only supported in Firefox...
-            let menuElem = null;
-            if (document.body.getAttribute('contextmenu')) {
-                menuElem = document.querySelector('menu#'+document.body.getAttribute('contextmenu')); // type=context
-            }
-            if (!menuElem) {
-                menuElem = document.createElement("menu");
-                menuElem.setAttribute('type', 'context');
-                menuElem.id = 'sclmenu';
-                document.body.appendChild(menuElem);
-            }
-            document.body.setAttribute('contextmenu', menuElem.id);
-            let scriptMenu = document.querySelector('menu#menu'+scl.getScriptIdentifier());
-            if (!scriptMenu) {
-                scriptMenu = document.createElement("menu");
-                scriptMenu.setAttribute('label', scl.getScriptName());
-                scriptMenu.id = 'menu'+scl.getScriptIdentifier();
-                menuElem.appendChild(scriptMenu);
-            }
-            let menuItem = document.createElement("menuitem");
-            menuItem.setAttribute('label', caption);
-            scriptMenu.appendChild(menuItem);
-            menuItem.addEventListener('click',commandFunc, false);
-        }
-    },
-    contextMenuSupported: function() { // Ugh, it's a bit ugly (and maybe unnecessary), but...
-        let oMenu = document.createElement("menu");
-        return (oMenu.type !== "undefined"); // type="list|context|toolbar" if supported ?
-    },
-    getScriptName: function() {
-        if (scl.info.script.name) {
-            return scl.info.script.name;
-        } else {
-            return 'Userscript';
-        }
-    },
-    getScriptIdentifier() {
-        if (scl.info.script.namespace) {
-            return scl.info.script.namespace.replace(/[^\w]+/g,'x');
-        } else if (scl.info.script.name) {
-            return scl.info.script.name.replace(/[^\w]+/g,'x');
-        } else {
-            alert('Error: Script Namespace or Name not found (Missing @grant for GM_info/GM.info?)');
-        }
-    }
-};
+/*
+ *      Stig's Art Grabr is an userscript and/or bookmarklet for grabbing big high resolution
+ *      album cover-art from various sites.
+ *
+ *      https://greasyfork.org/scripts/20771-stig-s-art-grabr
+ *      https://github.com/StigNygaard/Stigs_Art_Grabr
+ *
+ *      Partly based on tips at http://wiki.musicbrainz.org/User:Nikki/CAA and on itunes tip
+ *      from MusicBrainz/GitHub/GreasyFork user jesus2099 who has made a lot of userscripts
+ *      (especially for MusicBrainz users): https://greasyfork.org/users/2206-jesus2099
+ *
+ *      To run this script as a bookmarklet (running latest GreasyFork hosted version), use:
+ *      javascript:(function(){document.body.appendChild(document.createElement("script")).src="https://greasyfork.org/scripts/20771/code/StigsArtGrabr.js?t="+(new Date()).getTime();}())
+ *
+ *      NOTICE:
+ *      1)  On iTunes Stig's Art Grabr only works when used as a userscript, not when used as
+ *          a bookmarklet.
+ *      2)  When using the userscript with Greasemonkey 4, you use the right-click context menu
+ *          on webpage to search for big cover art. With other userscript managers, look in the
+ *          dropdown menu on the managers toolbar icon.
+ */
 
 // CHANGELOG - The most important updates/versions:
 let changelog = [
+    {version: '2017.10.29.0', description: 'Using my new GM Common API for Greasemonkey 4 WebExtension compatibility (For setting menu-items).'},
     {version: '2017.10.14.0', description: 'Fix for iTunes. Optimizing HTML5 contextmenu (Currently only supported in Firefox). Also adding changelog to menu.'},
     {version: '2017.10.09.0', description: 'Adding HTML5 contextmenu (Currently only supported in Firefox). Handy for the upcoming new Greasemonkey 4 WebExtension which probably won\'t support the normal userscript commands menu.'},
     {version: '2017.08.01.1', description: 'Nothing new. Just moving development source to a GitHub repository: https://github.com/StigNygaard/Stigs_Art_Grabr'},
@@ -272,8 +227,8 @@ if (typeof GM_info === 'object' || (typeof GM === 'object' && typeof GM.info ===
         }
         list.insertAdjacentHTML('beforeend', lcontent);
     }
-    scl.registerMenuCommand("Search big size cover art", runGrabr, "a");
-    scl.registerMenuCommand("Changelog", showGrabrLog, "l");
+    GMC.registerMenuCommand("Search big size cover art", runGrabr, "a");
+    GMC.registerMenuCommand("Changelog", showGrabrLog, "l");
 } else {
     // Started from bookmarklet!
     runGrabr();
