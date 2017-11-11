@@ -2,7 +2,7 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2017.11.01.0
+// @version     2017.11.11.1
 // @author      Stig Nygaard, http://www.rockland.dk
 // @homepageURL http://www.rockland.dk/userscript/misc/artgrab/
 // @supportURL  http://www.rockland.dk/userscript/misc/artgrab/
@@ -51,7 +51,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_getResourceURL
-// @require     https://greasyfork.org/scripts/34527/code/GMCommonAPI.js?version=227517
+// @require     https://greasyfork.org/scripts/34527/code/GMCommonAPI.js?version=229618
 // @resource    cmImage https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?url=http%3A%2F%2Fwww.rockland.dk%2Fimg%2FgrabrGM4.png&container=focus&resize_w=854&refresh=10000
 // @noframes
 // ==/UserScript==
@@ -69,7 +69,7 @@
  *      (especially for MusicBrainz users): https://greasyfork.org/users/2206-jesus2099
  *
  *      To run this script as a bookmarklet (running latest GreasyFork hosted version), use:
- *      javascript:(function(){document.body.appendChild(document.createElement("script")).src="https://greasyfork.org/scripts/20771/code/StigsArtGrabr.js?t="+(new Date()).getTime();}())
+ *      javascript:(function(){document.body.appendChild(document.createElement("script")).src="https://greasyfork.org/scripts/20771/code/StigsArtGrabr.js?t="+Date.now();}())
  *
  *      NOTICE:
  *      1)  On iTunes Stig's Art Grabr only works when used as a userscript, not when used as
@@ -217,7 +217,7 @@ function runGrabr() {
 }
 
 function runOnceFirefox() {
-    if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1 && GM_setValue && GM_getValue) { // Firefox med GM3 (On purpose using legacy GM_ functions here)
+    if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1 && (typeof GM_setValue === 'function') && (typeof GM_getValue === 'function')) { // Firefox med GM3 (On purpose using legacy GM_ functions here)
         if (!GM_getValue('shownGM4',false)) {
             let infobox = '<div id="infobox" style="position:fixed;left:0;right:0;top:8em;z-index:3000009;margin-left:auto;margin-right:auto;min-height:8em;width:50%;background-color:#fff;color:#111;border:3px #D00 solid;border-radius:5px;display:none;padding:1em"><b style="color:#D00"><em>Stig\'s Art Grabr</em> information - This is only shown once</b><div style="padding:1em 0 0 0"></div></div>';
             document.body.insertAdjacentHTML('beforeend', infobox);
@@ -226,7 +226,7 @@ function runOnceFirefox() {
                 return false;
             }, false);
             let content = document.querySelector('div#infobox div');
-            let info = '<p>In Firefox you can now access Art Grabr commands via the webpage\'s <em>context-menu</em> (right-click on the page).</p><p>If you are a Greasemonkey user, this will be the <em>only way</em> to access the Art Grabr commands from Greasemonkey <em>version 4</em>, which is expected to be released here in early November.</p><img style="max-width:100%;width:auto;height:auto" src="'+GM_getResourceURL('cmImage')+'" />';
+            let info = '<p>In Firefox you can now access Art Grabr commands via the webpage\'s <em>context-menu</em> (right-click on the page).</p><p>If you are a Greasemonkey user, this will be the <em>only way</em> to access the Art Grabr commands from Greasemonkey <em>version 4</em>, which is expected to be released here in early November.</p><img style="max-width:100%;width:auto;height:auto" src="'+GM_getResourceUrl('cmImage')+'" />';
             content.insertAdjacentHTML('beforeend', info);
             document.getElementById('infobox').style.display = 'block';
             GM_setValue('shownGM4',true);
