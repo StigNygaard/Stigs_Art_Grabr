@@ -2,7 +2,7 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2017.11.11.1
+// @version     2017.11.12.0
 // @author      Stig Nygaard, http://www.rockland.dk
 // @homepageURL http://www.rockland.dk/userscript/misc/artgrab/
 // @supportURL  http://www.rockland.dk/userscript/misc/artgrab/
@@ -255,10 +255,6 @@ if (typeof GM_info === 'object' || (typeof GM === 'object' && typeof GM.info ===
     GMC.registerMenuCommand("Changelog", showGrabrLog, "l");
 
     runOnceFirefox(); // Temp! - For Firefox users likely using Greasemonkey 3.x
-
-    //Debug
-    //GMC.inspect(GMC.info.script);
-    //GMC.inspect(GMC.info.script.resources['cmImage']);
 
 } else {
     // Started from bookmarklet!
