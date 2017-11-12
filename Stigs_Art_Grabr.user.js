@@ -1,4 +1,4 @@
-﻿// ==UserScript==
+// ==UserScript==
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
@@ -51,7 +51,7 @@
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_getResourceURL
-// @require     https://greasyfork.org/scripts/34527/code/GMCommonAPI.js?version=229618
+// @require     https://greasyfork.org/scripts/34527/code/GMCommonAPI.js?version=229909
 // @resource    cmImage https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?url=http%3A%2F%2Fwww.rockland.dk%2Fimg%2FgrabrGM4.png&container=focus&resize_w=854&refresh=10000
 // @noframes
 // ==/UserScript==
@@ -255,6 +255,11 @@ if (typeof GM_info === 'object' || (typeof GM === 'object' && typeof GM.info ===
     GMC.registerMenuCommand("Changelog", showGrabrLog, "l");
 
     runOnceFirefox(); // Temp! - For Firefox users likely using Greasemonkey 3.x
+
+    //Debug
+    //GMC.inspect(GMC.info.script);
+    //GMC.inspect(GMC.info.script.resources['cmImage']);
+
 } else {
     // Started from bookmarklet!
     runGrabr();
