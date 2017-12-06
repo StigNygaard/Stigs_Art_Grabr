@@ -2,7 +2,7 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2017.11.12.0
+// @version     2017.12.06.0
 // @author      Stig Nygaard, http://www.rockland.dk
 // @homepageURL http://www.rockland.dk/userscript/misc/artgrab/
 // @supportURL  http://www.rockland.dk/userscript/misc/artgrab/
@@ -48,11 +48,7 @@
 // @match       *://*.jamendo.com/*
 // @match       *://*.magnatune.com/*
 // @grant       GM_registerMenuCommand
-// @grant       GM_getValue
-// @grant       GM_setValue
-// @grant       GM_getResourceURL
-// @require     https://greasyfork.org/scripts/34527/code/GMCommonAPI.js?version=229909
-// @resource    cmImage https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?url=http%3A%2F%2Fwww.rockland.dk%2Fimg%2FgrabrGM4.png&container=focus&resize_w=854&refresh=10000
+// @require     https://greasyfork.org/scripts/34527/code/GMCommonAPI.js?version=235354
 // @noframes
 // ==/UserScript==
 
@@ -68,12 +64,18 @@
  *      from MusicBrainz/GitHub/GreasyFork user jesus2099 who has made a lot of userscripts
  *      (especially for MusicBrainz users): https://greasyfork.org/users/2206-jesus2099
  *
+ *      Should work with all popular browsers and userscript managers. Compatibility with the new
+ *      Greasemonkey 4 WebExtension and Firefox 57+ is done with the help of GM Common API:
+ *
+ *      https://github.com/StigNygaard/GMCommonAPI.js
+ *      https://greasyfork.org/scripts/34527-gmcommonapi-js
+ *
  *      To run this script as a bookmarklet (running latest GreasyFork hosted version), use:
  *      javascript:(function(){document.body.appendChild(document.createElement("script")).src="https://greasyfork.org/scripts/20771/code/StigsArtGrabr.js?t="+Date.now();}())
  *
  *      NOTICE:
- *      1)  On iTunes Stig's Art Grabr only works when used as a userscript, not when used as
- *          a bookmarklet.
+ *      1)  On iTunes Stig's Art Grabr will with most webbrowsers only work when used as a
+ *          userscript, and NOT when used as a bookmarklet (CSP restriction).
  *      2)  When using the userscript with Greasemonkey 4, you use the right-click context menu
  *          on webpage to search for big cover art. With other userscript managers, look in the
  *          dropdown menu on the managers toolbar icon.
@@ -81,7 +83,8 @@
 
 // CHANGELOG - The most important updates/versions:
 let changelog = [
-    {version: '2017.11.01.0', description: 'Run-once info for Firefox users about the right-click context menu and Greasemonkey 4.'},
+    {version: '2017.12.06.0', description: 'Remove the Run-once info for Firefox users.'},
+    {version: '2017.11.01.0', description: 'Run-once info for Firefox users about the right-click context menu and upcoming Greasemonkey 4.'},
     {version: '2017.10.29.0', description: 'Using my new GM Common API for Greasemonkey 4 WebExtension compatibility (For setting menu-items).'},
     {version: '2017.10.14.0', description: 'Fix for iTunes. Optimizing HTML5 contextmenu (Currently only supported in Firefox). Also adding changelog to menu.'},
     {version: '2017.10.09.0', description: 'Adding HTML5 contextmenu (Currently only supported in Firefox). Handy for the upcoming new Greasemonkey 4 WebExtension which probably won\'t support the normal userscript commands menu.'},
@@ -180,7 +183,7 @@ function runGrabr() {
                         l[i].style.border = "1px #FB0 solid";
                         if (l[i].naturalWidth) {
                             l[i].onmouseover = function () {
-                                this.title = "" + this.naturalWidth + "x" + this.naturalHeight;
+                                this.title = String(this.naturalWidth) + "x" + this.naturalHeight;
                             };
                         }
                         aEv(l[i], "load", function () {
@@ -199,7 +202,7 @@ function runGrabr() {
                         l[i].src = l[i].src.replace(w[2], w[3]);
                         n++;
                         if (n === m) {
-                            if (confirm("" + n + " images requested. Continue?")) {
+                            if (confirm(String(n) + " images requested. Continue?")) {
                                 m = m + 20;
                             } else {
                                 break o;
@@ -214,24 +217,6 @@ function runGrabr() {
         log('No hits found...');
     }
     return void(0);
-}
-
-function runOnceFirefox() {
-    if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1 && (typeof GM_setValue === 'function') && (typeof GM_getValue === 'function')) { // Firefox med GM3 (On purpose using legacy GM_ functions here)
-        if (!GM_getValue('shownGM4',false)) {
-            let infobox = '<div id="infobox" style="position:fixed;left:0;right:0;top:8em;z-index:3000009;margin-left:auto;margin-right:auto;min-height:8em;width:50%;background-color:#fff;color:#111;border:3px #D00 solid;border-radius:5px;display:none;padding:1em"><b style="color:#D00"><em>Stig\'s Art Grabr</em> information - This is only shown once</b><div style="padding:1em 0 0 0"></div></div>';
-            document.body.insertAdjacentHTML('beforeend', infobox);
-            document.getElementById('infobox').addEventListener('click', function () {
-                this.style.display = 'none';
-                return false;
-            }, false);
-            let content = document.querySelector('div#infobox div');
-            let info = '<p>In Firefox you can now access Art Grabr commands via the webpage\'s <em>context-menu</em> (right-click on the page).</p><p>If you are a Greasemonkey user, this will be the <em>only way</em> to access the Art Grabr commands from Greasemonkey <em>version 4</em>, which is expected to be released here in early November.</p><img style="max-width:100%;width:auto;height:auto" src="'+GM_getResourceUrl('cmImage')+'" />';
-            content.insertAdjacentHTML('beforeend', info);
-            document.getElementById('infobox').style.display = 'block';
-            GM_setValue('shownGM4',true);
-        }
-    }
 }
 
 function showGrabrLog() {
@@ -253,9 +238,6 @@ if (typeof GM_info === 'object' || (typeof GM === 'object' && typeof GM.info ===
     }
     GMC.registerMenuCommand("Search big size cover art", runGrabr, "a");
     GMC.registerMenuCommand("Changelog", showGrabrLog, "l");
-
-    runOnceFirefox(); // Temp! - For Firefox users likely using Greasemonkey 3.x
-
 } else {
     // Started from bookmarklet!
     runGrabr();
