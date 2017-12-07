@@ -2,7 +2,7 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2017.12.07.0
+// @version     2017.12.07.3
 // @author      Stig Nygaard, http://www.rockland.dk
 // @homepageURL http://www.rockland.dk/userscript/misc/artgrab/
 // @supportURL  http://www.rockland.dk/userscript/misc/artgrab/
@@ -48,7 +48,7 @@
 // @match       *://*.jamendo.com/*
 // @match       *://*.magnatune.com/*
 // @grant       GM_registerMenuCommand
-// @require     https://greasyfork.org/scripts/34527/code/GMCommonAPI.js?version=229909
+// @require     https://greasyfork.org/scripts/34527/code/GMCommonAPI.js?version=235553
 // @noframes
 // ==/UserScript==
 
