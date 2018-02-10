@@ -2,7 +2,7 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2017.12.07.3
+// @version     2018.02.10.0
 // @author      Stig Nygaard, http://www.rockland.dk
 // @homepageURL http://www.rockland.dk/userscript/misc/artgrab/
 // @supportURL  http://www.rockland.dk/userscript/misc/artgrab/
@@ -27,6 +27,9 @@
 // @match       *://*.musicbrainz.org/*
 // @match       *://*.soundcloud.com/*
 // @match       *://play.google.com/*
+// @match       *://*.deezer.com/*
+// @match       *://*.qobuz.com/*
+// @match       *://*.trackitdown.net/*
 // @match       *://*.45cat.com/*
 // @match       *://*.amazon.com/*
 // @match       *://*.amazon.co.uk/*
@@ -48,7 +51,7 @@
 // @match       *://*.jamendo.com/*
 // @match       *://*.magnatune.com/*
 // @grant       GM_registerMenuCommand
-// @require     https://greasyfork.org/scripts/34527/code/GMCommonAPI.js?version=235553
+// @require     https://greasyfork.org/scripts/34527/code/GMCommonAPI.js?version=237846
 // @noframes
 // ==/UserScript==
 
@@ -83,6 +86,7 @@
 
 // CHANGELOG - The most important updates/versions:
 let changelog = [
+    {version: '2018.02.10.0', description: 'Adding support for Deezer, Qobuz and Trackitdown (All tested on public pages only). Big thanks to Anton Fedorov for tips making this possible.'},
     {version: '2017.12.07.0', description: 'Revert yesterdays update of GMCommonAPI. Latest version introduced an error in Chrome.'},
     {version: '2017.12.06.0', description: 'Remove the Run-once info for Firefox users.'},
     {version: '2017.11.01.0', description: 'Run-once info for Firefox users about the right-click context menu and upcoming Greasemonkey 4.'},
@@ -120,6 +124,7 @@ function runGrabr() {
         [/cdbaby\./, /images\..*_small\.[jpgn]{3}/i, /_small\./gi, "."],
         [/cdbaby\./, /images\..*\.jpg/i, /\.jpg/gi, "_large.jpg"],
         [/cdbaby\./, /images\..*\.png/i, /\.png/gi, "_large.png"],
+        [/deezer\./, /images\/\w{5,9}\/.*\.[jpng]{3}/i, /\/\d{2,3}x\d{2,3}-0{6}-\d{1,2}-0-0\.[jpng]{3}/gi, "/1400x1400-000000-0-0-0.png"],
         [/fnd\.io/, /\/\d{2,}x\d{2,}bb/i, /\/\d{2,}x\d{2,}bb/gi, "/999999x999999bb-100"],
         //[/itunes\.apple\./, /1\d0x1\d0\./i, /^(.*\/\/)\w+(\d+.mzstatic.com)\/\w+\/\w+\/(\w+\/\w+\/\w+\/\w+\/\w+\/[\w-]+)\/cover\d+x\d+.jpeg$/i, "$1is$2/image/thumb/$3/source/999999x999999bb-100.jpg"], // replace regexp from jesus2099
         //[/itunes\.apple\./, /1\d0x1\d0bb\.jpg/i, /\/source\/\d+x\d+bb\.jpg/i, "/source/999999x999999bb-100.jpg"], // fix 2016-11-21
@@ -135,8 +140,10 @@ function runGrabr() {
         [/musicbrainz\.org/, /-\d{3}\.jpg/i, /-\d{3}\.jpg/gi, ".jpg"],
         [/musicbrainz\.org/, /-\d{3}\.png/i, /-\d{3}\.png/gi, ".png"],
         [/musicdiner\./, /\/\d{2,3}x\d{2,3}bb/i, /\/\d{2,3}x\d{2,3}bb/gi, "/999999x999999bb-100"],
-        [/soundcloud\./, /t\d\d0x\d\d0\./i, /t\d\d0x\d\d0\./gi, "original."],
-        [/play\.google\.com/, /googleusercontent\.com.*\=w\d{3}/, /\=w\d{3}$/, "=w1200"]];
+        [/play\.google\.com/, /googleusercontent\.com.*\=w\d{3}/i, /\=w\d{3}$/gi, "=w1200"],
+        [/qobuz\.com/, /static\.qobuz\.com\/images\/covers\//i, /_\d{2,3}\.jpg/gi, "_max.jpg"],
+        [/trackitdown\.net/, /\.cloudfront.net\/graphics\//i, /__\w+\.png/gi, "_original.jpg"],
+        [/soundcloud\./, /t\d\d0x\d\d0\./i, /t\d\d0x\d\d0\./gi, "original."]];
         /* https://affiliate.itunes.apple.com/resources/documentation/itunes-store-web-service-search-api/ */
     let aEv = function (e,ev,f,c) {
         c=(c)?c:false;
@@ -168,6 +175,13 @@ function runGrabr() {
             imgs[i].style.maxWidth="300px";
             imgs[i].style.maxHeight="300px";
             imgs[i].parentNode.parentNode.replaceChild(imgs[i], imgs[i].parentNode);
+        }
+    }
+    // deezer pre-burner
+    if (d.location.hostname.search(/deezer\.com/) > -1) {
+        pics = document.querySelectorAll("figure.thumbnail>div.picture");
+        for (i = 0; i < pics.length; i++) {
+            pics[i].classList.remove('picture');
         }
     }
     log('Activated while on ' + d.location.hostname);
