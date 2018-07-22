@@ -2,7 +2,7 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2018.02.10.0
+// @version     2018.07.22.0
 // @author      Stig Nygaard, http://www.rockland.dk
 // @homepageURL http://www.rockland.dk/userscript/misc/artgrab/
 // @supportURL  http://www.rockland.dk/userscript/misc/artgrab/
@@ -86,23 +86,14 @@
 
 // CHANGELOG - The most important updates/versions:
 let changelog = [
+    {version: '2018.07.22.0', description: 'Fix for broken cdbaby support.'},
     {version: '2018.02.10.0', description: 'Adding support for Deezer, Qobuz and Trackitdown (All tested on public pages only). Big thanks to Anton Fedorov for tips making this possible.'},
-    {version: '2017.12.07.0', description: 'Revert yesterdays update of GMCommonAPI. Latest version introduced an error in Chrome.'},
-    {version: '2017.12.06.0', description: 'Remove the Run-once info for Firefox users.'},
-    {version: '2017.11.01.0', description: 'Run-once info for Firefox users about the right-click context menu and upcoming Greasemonkey 4.'},
     {version: '2017.10.29.0', description: 'Using my new GM Common API for Greasemonkey 4 WebExtension compatibility (For setting menu-items).'},
-    {version: '2017.10.14.0', description: 'Fix for iTunes. Optimizing HTML5 contextmenu (Currently only supported in Firefox). Also adding changelog to menu.'},
     {version: '2017.10.09.0', description: 'Adding HTML5 contextmenu (Currently only supported in Firefox). Handy for the upcoming new Greasemonkey 4 WebExtension which probably won\'t support the normal userscript commands menu.'},
     {version: '2017.08.01.1', description: 'Nothing new. Just moving development source to a GitHub repository: https://github.com/StigNygaard/Stigs_Art_Grabr'},
     {version: '2017.06.26.1', description: 'Currently grabbing covers directly from the iTunes website doesn\'t work when using Stig\'s Art Grabr as a *bookmarklet*. It does however still works with script installed and used as a *userscript*. Also grabbing iTunes covers indirectly via musicdiner.com, fnd.io and labs.stephenou.com/itunes should work both ways.'},
-    {version: '2017.06.23.0', description: 'Once again adapting to iTunes site changes. But fnd.io, stephenou.com/itunes and musicdiner.com also works for itunes cover art...'},
-    {version: '2016.11.21.0', description: 'Quick fix to adapt to iTunes changes. Will try to fix fnd.io, stephenou.com and musicdiner.com later...'},
-    {version: '2016.09.25.0', description: 'Better last.fm support (Some image files was not converted before but are now).'},
-    {version: '2016.07.01.0', description: 'Improved itunes support (most often higher resolution), thanks to tip from jesus2099. Also similar improved support for itunes searchengines on fnd.io, musicdiner.com and labs.stephenou.com/itunes.'},
-    {version: '2016.06.22.1', description: 'Re-adding musicdiner.com (service wasn\'t actually gone as I thought).'},
     {version: '2016.06.21.6', description: 'Preparing it to be able to run as a bookmarklet too...'},
     {version: '2016.06.20.0', description: '1st official release version.'},
-    {version: '2016.06.19.1', description: 'Updated/fixed support for last.fm and bandcamp. Musicdiner is gone, but support for fnd.io and labs.stephenou.com/itunes added instead.'},
     {version: '2016.06.19.0', description: 'First userscript version (Converted from my old BCA bookmarklet).'}
 ];
 
@@ -121,9 +112,9 @@ function runGrabr() {
         [/amazon\./, /\._[A-Z]{2}\d{3}_[\w_,-]*\.png/i, /\._[A-Z]{2}\d{3}_[\w_,-]*\.png/gi, ".png"],
         [/bandcamp\./, /_\d{1,2}\.jpg/i, /_\d{1,2}\.jpg/gi, "_0.jpg"],
         [/bandcamp\./, /_\d{1,2}\.png/i, /_\d{1,2}\.png/gi, "_0.png"],
-        [/cdbaby\./, /images\..*_small\.[jpgn]{3}/i, /_small\./gi, "."],
-        [/cdbaby\./, /images\..*\.jpg/i, /\.jpg/gi, "_large.jpg"],
-        [/cdbaby\./, /images\..*\.png/i, /\.png/gi, "_large.png"],
+        [/cdbaby\./, /cdbaby\.name\/.*_small\.[jpgn]{3}/i, /_small\./gi, "."],
+        [/cdbaby\./, /cdbaby\.name\/.*\.jpg/i, /\.jpg/gi, "_large.jpg"],
+        [/cdbaby\./, /cdbaby\.name\/.*\.png/i, /\.png/gi, "_large.png"],
         [/deezer\./, /images\/\w{5,9}\/.*\.[jpng]{3}/i, /\/\d{2,3}x\d{2,3}-0{6}-\d{1,2}-0-0\.[jpng]{3}/gi, "/1400x1400-000000-0-0-0.png"],
         [/fnd\.io/, /\/\d{2,}x\d{2,}bb/i, /\/\d{2,}x\d{2,}bb/gi, "/999999x999999bb-100"],
         //[/itunes\.apple\./, /1\d0x1\d0\./i, /^(.*\/\/)\w+(\d+.mzstatic.com)\/\w+\/\w+\/(\w+\/\w+\/\w+\/\w+\/\w+\/[\w-]+)\/cover\d+x\d+.jpeg$/i, "$1is$2/image/thumb/$3/source/999999x999999bb-100.jpg"], // replace regexp from jesus2099
