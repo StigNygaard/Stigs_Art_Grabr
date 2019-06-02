@@ -2,12 +2,13 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2018.07.22.0
+// @version     2019.06.02.0
 // @author      Stig Nygaard, http://www.rockland.dk
 // @homepageURL http://www.rockland.dk/userscript/misc/artgrab/
 // @supportURL  http://www.rockland.dk/userscript/misc/artgrab/
 // @match       *://*.allmusic.com/*
 // @match       *://*.bandcamp.com/*
+// @match       *://*.music.apple.com/*
 // @match       *://*.itunes.apple.com/*
 // @match       *://*.musicdiner.com/*
 // @match       *://*.fnd.io/*
@@ -86,13 +87,12 @@
 
 // CHANGELOG - The most important updates/versions:
 let changelog = [
+    {version: '2019.06.02.0', description: 'In some countries itunes.apple.com now forwards to music.apple.com. Support both.'},
     {version: '2018.07.22.0', description: 'Fix for broken cdbaby support.'},
     {version: '2018.02.10.0', description: 'Adding support for Deezer, Qobuz and Trackitdown (All tested on public pages only). Big thanks to Anton Fedorov for tips making this possible.'},
     {version: '2017.10.29.0', description: 'Using my new GM Common API for Greasemonkey 4 WebExtension compatibility (For setting menu-items).'},
     {version: '2017.10.09.0', description: 'Adding HTML5 contextmenu (Currently only supported in Firefox). Handy for the upcoming new Greasemonkey 4 WebExtension which probably won\'t support the normal userscript commands menu.'},
-    {version: '2017.08.01.1', description: 'Nothing new. Just moving development source to a GitHub repository: https://github.com/StigNygaard/Stigs_Art_Grabr'},
     {version: '2017.06.26.1', description: 'Currently grabbing covers directly from the iTunes website doesn\'t work when using Stig\'s Art Grabr as a *bookmarklet*. It does however still works with script installed and used as a *userscript*. Also grabbing iTunes covers indirectly via musicdiner.com, fnd.io and labs.stephenou.com/itunes should work both ways.'},
-    {version: '2016.06.21.6', description: 'Preparing it to be able to run as a bookmarklet too...'},
     {version: '2016.06.20.0', description: '1st official release version.'},
     {version: '2016.06.19.0', description: 'First userscript version (Converted from my old BCA bookmarklet).'}
 ];
@@ -120,7 +120,7 @@ function runGrabr() {
         //[/itunes\.apple\./, /1\d0x1\d0\./i, /^(.*\/\/)\w+(\d+.mzstatic.com)\/\w+\/\w+\/(\w+\/\w+\/\w+\/\w+\/\w+\/[\w-]+)\/cover\d+x\d+.jpeg$/i, "$1is$2/image/thumb/$3/source/999999x999999bb-100.jpg"], // replace regexp from jesus2099
         //[/itunes\.apple\./, /1\d0x1\d0bb\.jpg/i, /\/source\/\d+x\d+bb\.jpg/i, "/source/999999x999999bb-100.jpg"], // fix 2016-11-21
         //[/itunes\.apple\./, /\d{2,}x\d+\w+\.jpe?g/i, /\/source\/\d+x\d+\w+\.jpe?g/i, "/source/999999x999999bb-100.jpg"], // fix 2017-06-23
-        [/itunes\.apple\./, /\/\d+x\d+w?\.jpe?g$/i, /\/\d+x\d+w?\.jpe?g$/i, "/999999x999999bb-100.jpg"], // fix 2017-10-14
+        [/[mcitunes]{5,6}\.apple\./, /\/\d+x\d+w?\.jpe?g$/i, /\/\d+x\d+w?\.jpe?g$/i, "/999999x999999bb-100.jpg"], // fix 2017-10-14
         [/jamendo\./, /1\.\d00\.jpg/i, /1\.\d00\.jpg/gi, "1.0.jpg"],
         [/jamendo\./, /1\.\d00\.png/i, /1\.\d00\.png/gi, "1.0.png"],
         [/labs\.stephenou\.com/, /\/\d{2,3}x\d{2,3}bb/i, /\/\d{2,3}x\d{2,3}bb/gi, "/999999x999999bb-100"],
@@ -149,19 +149,19 @@ function runGrabr() {
     let w = null, n = 0, m = 20, d = document, i=0;
     // soundcloud pre-burner
     if (d.location.hostname.search(/soundcloud\./) > -1) {
-        spans = document.querySelectorAll("span[style*=background-image]");
+        let spans = document.querySelectorAll("span[style*=background-image]");
         for (i = 0; i < spans.length; i++) {
             if (spans[i].style.backgroundImage) {
-                imgsrc = spans[i].style.backgroundImage.match(/url[\(\"\u0027]+([^\"\u0027\)]*)[\)\"\u0027]+/)[1];
+                let imgsrc = spans[i].style.backgroundImage.match(/url[\(\"\u0027]+([^\"\u0027\)]*)[\)\"\u0027]+/)[1];
                 if ((spans[i].getElementsByTagName("img").length === 0) && (imgsrc.match(/t[\d]{3}x[\d]{3}\./) !== null)) {
                     spans[i].innerHTML = "<img src=\u0027" + imgsrc + "\u0027 alt=\u0027\u0027 style=\u0027width:200px;height:200px;border:none\u0027 />";
                 }
             }
         }
     }
-    // itunes (apple music) pre-burner
-    if (d.location.hostname.search(/itunes\.apple\./) > -1) {
-        imgs = document.querySelectorAll("picture>img");
+    // itunes/apple music pre-burner
+    if (d.location.hostname.search(/\.apple\./) > -1) {
+        let imgs = document.querySelectorAll("picture>img");
         for (i = 0; i < imgs.length; i++) {
             imgs[i].style.maxWidth="300px";
             imgs[i].style.maxHeight="300px";
@@ -170,7 +170,7 @@ function runGrabr() {
     }
     // deezer pre-burner
     if (d.location.hostname.search(/deezer\.com/) > -1) {
-        pics = document.querySelectorAll("figure.thumbnail>div.picture");
+        let pics = document.querySelectorAll("figure.thumbnail>div.picture");
         for (i = 0; i < pics.length; i++) {
             pics[i].classList.remove('picture');
         }
@@ -237,7 +237,7 @@ if (typeof GM_info === 'object' || (typeof GM === 'object' && typeof GM.info ===
         document.getElementById('grabrlog').addEventListener('click',function(){this.style.display = 'none';return false;}, false);
         let list = document.querySelector('div#grabrlog ul');
         let lcontent = '';
-        for (i=0; i<Math.min(8,changelog.length); i++) {
+        for (let i=0; i<Math.min(8,changelog.length); i++) {
             lcontent += '<li><i>'+changelog[i].version+'</i> - '+changelog[i].description+'</li>';
         }
         list.insertAdjacentHTML('beforeend', lcontent);
