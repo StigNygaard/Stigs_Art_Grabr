@@ -2,10 +2,10 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2019.06.02.0
-// @author      Stig Nygaard, http://www.rockland.dk
-// @homepageURL http://www.rockland.dk/userscript/misc/artgrab/
-// @supportURL  http://www.rockland.dk/userscript/misc/artgrab/
+// @version     2019.10.26.0
+// @author      Stig Nygaard, https://www.rockland.dk
+// @homepageURL https://www.rockland.dk/userscript/misc/artgrab/
+// @supportURL  https://www.rockland.dk/userscript/misc/artgrab/
 // @match       *://*.allmusic.com/*
 // @match       *://*.bandcamp.com/*
 // @match       *://*.music.apple.com/*
@@ -87,6 +87,7 @@
 
 // CHANGELOG - The most important updates/versions:
 let changelog = [
+    {version: '2019.10.26.0', description: 'Last.FM partial fix. Now again able to find fullsize images. But mouseover with dimensions might not show.'},
     {version: '2019.06.02.0', description: 'In some countries itunes.apple.com now forwards to music.apple.com. Support both.'},
     {version: '2018.07.22.0', description: 'Fix for broken cdbaby support.'},
     {version: '2018.02.10.0', description: 'Adding support for Deezer, Qobuz and Trackitdown (All tested on public pages only). Big thanks to Anton Fedorov for tips making this possible.'},
@@ -120,12 +121,13 @@ function runGrabr() {
         //[/itunes\.apple\./, /1\d0x1\d0\./i, /^(.*\/\/)\w+(\d+.mzstatic.com)\/\w+\/\w+\/(\w+\/\w+\/\w+\/\w+\/\w+\/[\w-]+)\/cover\d+x\d+.jpeg$/i, "$1is$2/image/thumb/$3/source/999999x999999bb-100.jpg"], // replace regexp from jesus2099
         //[/itunes\.apple\./, /1\d0x1\d0bb\.jpg/i, /\/source\/\d+x\d+bb\.jpg/i, "/source/999999x999999bb-100.jpg"], // fix 2016-11-21
         //[/itunes\.apple\./, /\d{2,}x\d+\w+\.jpe?g/i, /\/source\/\d+x\d+\w+\.jpe?g/i, "/source/999999x999999bb-100.jpg"], // fix 2017-06-23
-        [/[mcitunes]{5,6}\.apple\./, /\/\d+x\d+w?\.jpe?g$/i, /\/\d+x\d+w?\.jpe?g$/i, "/999999x999999bb-100.jpg"], // fix 2017-10-14
+        [/(music|itunes)\.apple\./, /\/\d+x\d+w?\.jpe?g$/i, /\/\d+x\d+w?\.jpe?g$/i, "/999999x999999bb-100.jpg"], // fix 2017-10-14
         [/jamendo\./, /1\.\d00\.jpg/i, /1\.\d00\.jpg/gi, "1.0.jpg"],
         [/jamendo\./, /1\.\d00\.png/i, /1\.\d00\.png/gi, "1.0.png"],
         [/labs\.stephenou\.com/, /\/\d{2,3}x\d{2,3}bb/i, /\/\d{2,3}x\d{2,3}bb/gi, "/999999x999999bb-100"],
-        [/last(fm)?\.[a-z]{2,3}/, /\.lst\.fm\/i\/u\/[a-zA-Z]*\d{2,}\w*\//i, /\.lst\.fm\/i\/u\/[a-z]*\d{2,}\w*\//gi, ".lst.fm/i/u/"],
-        [/last(fm)?\.[a-z]{2,3}/, /\.akamaized\.net\/i\/u\/[a-zA-Z]*\d{2,}\w*\//i, /\.akamaized\.net\/i\/u\/[a-z]*\d{2,}\w*\//gi, ".akamaized.net/i/u/"],
+        // [/last(fm)?\.[a-z]{2,3}/, /\.lst\.fm\/i\/u\/[a-zA-Z]*\d{2,}\w*\//i, /\.lst\.fm\/i\/u\/[a-z]*\d{2,}\w*\//gi, ".lst.fm/i/u/"],
+        // [/last(fm)?\.[a-z]{2,3}/, /\.akamaized\.net\/i\/u\/[a-zA-Z]*\d{2,}\w*\//i, /\.akamaized\.net\/i\/u\/[a-z]*\d{2,}\w*\//gi, ".akamaized.net/i/u/"],
+        [/last(fm)?\.[a-z]{2,3}/, /\.net\/i\/u\/[a-zA-Z]*\d{2,}\w*\//i, /\.net\/i\/u\/[a-z]*\d{2,}\w*\//gi, ".net/i/u/"], // fix 2019-10-26
         [/magnatune\./, /cover_\d{2,3}\./i, /cover_\d{2,3}\./gi, "cover."],
         [/musicbrainz\.org/, /_thumb\d{3}\./i, /_thumb\d{3}\./gi, "."],
         [/musicbrainz\.org/, /-\d{3}\.jpg/i, /-\d{3}\.jpg/gi, ".jpg"],
@@ -189,7 +191,14 @@ function runGrabr() {
                         l[i].style.border = "1px #FB0 solid";
                         if (l[i].naturalWidth) {
                             l[i].onmouseover = function () {
-                                this.title = String(this.naturalWidth) + "x" + this.naturalHeight;
+                                this.setAttribute("title", String(this.naturalWidth) + "x" + this.naturalHeight);
+                                this.setAttribute("data-title", String(this.naturalWidth) + "x" + this.naturalHeight);
+                                this.setAttribute("data-tooltip", String(this.naturalWidth) + "x" + this.naturalHeight);
+                                // if (this.parentNode) {
+                                //     this.parentNode.setAttribute("title", String(this.naturalWidth) + "x" + this.naturalHeight);
+                                //     this.parentNode.setAttribute("data-title", String(this.naturalWidth) + "x" + this.naturalHeight);
+                                //     this.parentNode.setAttribute("data-tooltip", String(this.naturalWidth) + "x" + this.naturalHeight);
+                                // } // do it on parent?
                             };
                         }
                         aEv(l[i], "load", function () {
