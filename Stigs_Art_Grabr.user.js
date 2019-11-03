@@ -2,7 +2,7 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2019.10.26.0
+// @version     2019.11.03.0
 // @author      Stig Nygaard, https://www.rockland.dk
 // @homepageURL https://www.rockland.dk/userscript/misc/artgrab/
 // @supportURL  https://www.rockland.dk/userscript/misc/artgrab/
@@ -87,7 +87,8 @@
 
 // CHANGELOG - The most important updates/versions:
 let changelog = [
-    {version: '2019.10.26.0', description: 'Last.FM partial fix. Now again able to find fullsize images. But mouseover with dimensions might not show.'},
+    {version: '2019.11.03.0', description: 'Last.FM fix. Make mouseover and right-click work again.'},
+    {version: '2019.10.26.0', description: 'Last.FM partial fix. Now again able to find fullsize images. But mouseover with dimensions might not show and sometimes image is "protected" behind a layer.'},
     {version: '2019.06.02.0', description: 'In some countries itunes.apple.com now forwards to music.apple.com. Support both.'},
     {version: '2018.07.22.0', description: 'Fix for broken cdbaby support.'},
     {version: '2018.02.10.0', description: 'Adding support for Deezer, Qobuz and Trackitdown (All tested on public pages only). Big thanks to Anton Fedorov for tips making this possible.'},
@@ -167,7 +168,7 @@ function runGrabr() {
         for (i = 0; i < imgs.length; i++) {
             imgs[i].style.maxWidth="300px";
             imgs[i].style.maxHeight="300px";
-            imgs[i].parentNode.parentNode.replaceChild(imgs[i], imgs[i].parentNode);
+            imgs[i].parentNode.parentNode.replaceChild(imgs[i], imgs[i].parentNode); // (newchild, oldchild)
         }
     }
     // deezer pre-burner
@@ -177,6 +178,20 @@ function runGrabr() {
             pics[i].classList.remove('picture');
         }
     }
+    // last.fm pre-burner
+    if (d.location.hostname.search(/last(fm)?\.[a-z]{2,3}/) > -1) {
+        let elms = document.querySelectorAll(('.album-overview-cover-art-actions'));
+        for (i=0; i < elms.length; i++) {
+            elms[i].parentNode.removeChild(elms[i]);
+        }
+        let imgs = document.querySelectorAll(('a.cover-art img, a.image-list-item img'));
+        for (i=0; i < imgs.length; i++) {
+            imgs[i].style.maxWidth="370px";
+            imgs[i].style.maxHeight="370px";
+            imgs[i].parentNode.parentNode.replaceChild(imgs[i], imgs[i].parentNode); // (newchild, oldchild)
+        }
+    }
+
     log('Activated while on ' + d.location.hostname);
     o:
     for (let v = 0; v < a.length; v++) {
@@ -190,15 +205,12 @@ function runGrabr() {
                     if ((l[i].src).search(w[1]) > -1) {
                         l[i].style.border = "1px #FB0 solid";
                         if (l[i].naturalWidth) {
-                            l[i].onmouseover = function () {
+                            // l[i].title = "just testing"; // adding dimemsions later on onload image?
+                            // l[i].parentNode.title = "just testing parent"; // adding dimemsions later on onload image?
+                            l[i].onmouseover = function () { // onmouseover via w3 metode. Eller på niveauet over og tage dimension på første img child???
                                 this.setAttribute("title", String(this.naturalWidth) + "x" + this.naturalHeight);
                                 this.setAttribute("data-title", String(this.naturalWidth) + "x" + this.naturalHeight);
                                 this.setAttribute("data-tooltip", String(this.naturalWidth) + "x" + this.naturalHeight);
-                                // if (this.parentNode) {
-                                //     this.parentNode.setAttribute("title", String(this.naturalWidth) + "x" + this.naturalHeight);
-                                //     this.parentNode.setAttribute("data-title", String(this.naturalWidth) + "x" + this.naturalHeight);
-                                //     this.parentNode.setAttribute("data-tooltip", String(this.naturalWidth) + "x" + this.naturalHeight);
-                                // } // do it on parent?
                             };
                         }
                         aEv(l[i], "load", function () {
@@ -208,6 +220,9 @@ function runGrabr() {
                                     this.style.borderWidth = "2px";
                                 }
                             }
+                            // Sæt titles HER istedet !!!
+                            // this.title = "Done loading: " + String(this.naturalWidth) + "x" + this.naturalHeight;
+                            // this.parentNode.title = "Done loading: " + String(this.naturalWidth) + "x" + this.naturalHeight;
                         });
                         aEv(l[i], "click", function () {
                             if (this.src) {
