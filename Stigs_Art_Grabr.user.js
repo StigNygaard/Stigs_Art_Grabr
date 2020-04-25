@@ -2,7 +2,7 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2019.11.03.0
+// @version     2020.04.25.0
 // @author      Stig Nygaard, https://www.rockland.dk
 // @homepageURL https://www.rockland.dk/userscript/misc/artgrab/
 // @supportURL  https://www.rockland.dk/userscript/misc/artgrab/
@@ -87,7 +87,8 @@
 
 // CHANGELOG - The most important updates/versions:
 let changelog = [
-    {version: '2019.11.03.0', description: 'Last.FM fix. Make mouseover and right-click work again.'},
+    {version: '2020.04.25.0', description: 'iTunes / Apple Music fix for updated site.'},
+    {version: '2019.11.03.0', description: 'Last.FM fix. Mouseover and right-click should work again now.'},
     {version: '2019.10.26.0', description: 'Last.FM partial fix. Now again able to find fullsize images. But mouseover with dimensions might not show and sometimes image is "protected" behind a layer.'},
     {version: '2019.06.02.0', description: 'In some countries itunes.apple.com now forwards to music.apple.com. Support both.'},
     {version: '2018.07.22.0', description: 'Fix for broken cdbaby support.'},
@@ -122,7 +123,8 @@ function runGrabr() {
         //[/itunes\.apple\./, /1\d0x1\d0\./i, /^(.*\/\/)\w+(\d+.mzstatic.com)\/\w+\/\w+\/(\w+\/\w+\/\w+\/\w+\/\w+\/[\w-]+)\/cover\d+x\d+.jpeg$/i, "$1is$2/image/thumb/$3/source/999999x999999bb-100.jpg"], // replace regexp from jesus2099
         //[/itunes\.apple\./, /1\d0x1\d0bb\.jpg/i, /\/source\/\d+x\d+bb\.jpg/i, "/source/999999x999999bb-100.jpg"], // fix 2016-11-21
         //[/itunes\.apple\./, /\d{2,}x\d+\w+\.jpe?g/i, /\/source\/\d+x\d+\w+\.jpe?g/i, "/source/999999x999999bb-100.jpg"], // fix 2017-06-23
-        [/(music|itunes)\.apple\./, /\/\d+x\d+w?\.jpe?g$/i, /\/\d+x\d+w?\.jpe?g$/i, "/999999x999999bb-100.jpg"], // fix 2017-10-14
+        //[/(music|itunes)\.apple\./, /\/\d+x\d+w?\.jpe?g$/i, /\/\d+x\d+w?\.jpe?g$/i, "/999999x999999bb-100.jpg"], // fix 2017-10-14 + 2019-06-02
+        [/(music|itunes)\.apple\./, /\/\d+x\d+bb\.jpe?g$/i, /\/\d+x\d+bb\.jpe?g$/i, "/999999x999999bb-100.jpg"], // fix 2020-04-25
         [/jamendo\./, /1\.\d00\.jpg/i, /1\.\d00\.jpg/gi, "1.0.jpg"],
         [/jamendo\./, /1\.\d00\.png/i, /1\.\d00\.png/gi, "1.0.png"],
         [/labs\.stephenou\.com/, /\/\d{2,3}x\d{2,3}bb/i, /\/\d{2,3}x\d{2,3}bb/gi, "/999999x999999bb-100"],
@@ -138,7 +140,7 @@ function runGrabr() {
         [/qobuz\.com/, /static\.qobuz\.com\/images\/covers\//i, /_\d{2,3}\.jpg/gi, "_max.jpg"],
         [/trackitdown\.net/, /\.cloudfront.net\/graphics\//i, /__\w+\.png/gi, "_original.jpg"],
         [/soundcloud\./, /t\d\d0x\d\d0\./i, /t\d\d0x\d\d0\./gi, "original."]];
-        /* https://affiliate.itunes.apple.com/resources/documentation/itunes-store-web-service-search-api/ */
+    /* https://affiliate.itunes.apple.com/resources/documentation/itunes-store-web-service-search-api/ */
     let aEv = function (e,ev,f,c) {
         c=(c)?c:false;
         if(e.addEventListener) {
@@ -164,11 +166,9 @@ function runGrabr() {
     }
     // itunes/apple music pre-burner
     if (d.location.hostname.search(/\.apple\./) > -1) {
-        let imgs = document.querySelectorAll("picture>img");
-        for (i = 0; i < imgs.length; i++) {
-            imgs[i].style.maxWidth="300px";
-            imgs[i].style.maxHeight="300px";
-            imgs[i].parentNode.parentNode.replaceChild(imgs[i], imgs[i].parentNode); // (newchild, oldchild)
+        let overlays = document.querySelectorAll(".artwork-overlay, .lockup__controls, .lockup__contextual-menu-trigger");
+        for (i = 0; i < overlays.length; i++) {
+            overlays[i].parentNode.removeChild(overlays[i]);
         }
     }
     // deezer pre-burner
@@ -194,55 +194,59 @@ function runGrabr() {
 
     log('Activated while on ' + d.location.hostname);
     o:
-    for (let v = 0; v < a.length; v++) {
-        if (d.location.hostname.search(a[v][0]) > -1) {
-            log('Running on ' + d.location.hostname);
-            w = a[v];
-            let l = d.getElementsByTagName("img");
-            if (l) {
-                log('Found ' + l.length + ' image tags');
-                for (i = 0; i < l.length; i++) {
-                    if ((l[i].src).search(w[1]) > -1) {
-                        l[i].style.border = "1px #FB0 solid";
-                        if (l[i].naturalWidth) {
-                            // l[i].title = "just testing"; // adding dimemsions later on onload image?
-                            // l[i].parentNode.title = "just testing parent"; // adding dimemsions later on onload image?
-                            l[i].onmouseover = function () { // onmouseover via w3 metode. Eller på niveauet over og tage dimension på første img child???
-                                this.setAttribute("title", String(this.naturalWidth) + "x" + this.naturalHeight);
-                                this.setAttribute("data-title", String(this.naturalWidth) + "x" + this.naturalHeight);
-                                this.setAttribute("data-tooltip", String(this.naturalWidth) + "x" + this.naturalHeight);
-                            };
-                        }
-                        aEv(l[i], "load", function () {
-                            if (this.style) {
-                                this.style.borderColor = "#F00";
-                                if (this.naturalWidth && this.naturalWidth > 999) {
-                                    this.style.borderWidth = "2px";
+        for (let v = 0; v < a.length; v++) {
+            if (d.location.hostname.search(a[v][0]) > -1) {
+                log('Running on ' + d.location.hostname);
+                w = a[v];
+                let l = d.getElementsByTagName("img");
+                if (l) {
+                    log('Found ' + l.length + ' image tags');
+                    for (i = 0; i < l.length; i++) {
+                        // log(' - ' + l[i].currentSrc + ' . Includes ' + w[1] + '?: ' + ((l[i].currentSrc).search(w[1]) > -1) );
+                        if ((l[i].currentSrc).search(w[1]) > -1) {
+                            l[i].style.border = "1px #FB0 solid";
+                            if (l[i].naturalWidth) {
+                                // l[i].title = "just testing"; // adding dimemsions later on onload image?
+                                // l[i].parentNode.title = "just testing parent"; // adding dimemsions later on onload image?
+                                l[i].onmouseover = function () { // onmouseover via w3 metode. Eller på niveauet over og tage dimension på første img child???
+                                    this.setAttribute("title", String(this.naturalWidth) + "x" + this.naturalHeight);
+                                    this.setAttribute("data-title", String(this.naturalWidth) + "x" + this.naturalHeight);
+                                    this.setAttribute("data-tooltip", String(this.naturalWidth) + "x" + this.naturalHeight);
+                                };
+                            }
+                            aEv(l[i], "load", function () {
+                                if (this.style) {
+                                    this.style.borderColor = "#F00";
+                                    if (this.naturalWidth && this.naturalWidth > 999) {
+                                        this.style.borderWidth = "2px";
+                                    }
                                 }
+                                // Sæt titles HER istedet !!!
+                                // this.title = "Done loading: " + String(this.naturalWidth) + "x" + this.naturalHeight;
+                                // this.parentNode.title = "Done loading: " + String(this.naturalWidth) + "x" + this.naturalHeight;
+                            });
+                            aEv(l[i], "click", function () {
+                                if (this.currentSrc) {
+                                    window.location = this.currentSrc;
+                                }
+                            });
+                            l[i].src = l[i].currentSrc.replace(w[2], w[3]);
+                            if (l[i].srcset) {
+                                l[i].removeAttribute('srcset')
                             }
-                            // Sæt titles HER istedet !!!
-                            // this.title = "Done loading: " + String(this.naturalWidth) + "x" + this.naturalHeight;
-                            // this.parentNode.title = "Done loading: " + String(this.naturalWidth) + "x" + this.naturalHeight;
-                        });
-                        aEv(l[i], "click", function () {
-                            if (this.src) {
-                                window.location = this.src;
-                            }
-                        });
-                        l[i].src = l[i].src.replace(w[2], w[3]);
-                        n++;
-                        if (n === m) {
-                            if (confirm(String(n) + " images requested. Continue?")) {
-                                m = m + 20;
-                            } else {
-                                break o;
+                            n++;
+                            if (n === m) {
+                                if (confirm(String(n) + " images requested. Continue?")) {
+                                    m = m + 20;
+                                } else {
+                                    break o;
+                                }
                             }
                         }
                     }
                 }
             }
         }
-    }
     if (w === null) {
         log('No hits found...');
     }
