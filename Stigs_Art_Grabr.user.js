@@ -2,7 +2,7 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2020.04.25.0
+// @version     2020.05.30.0
 // @author      Stig Nygaard, https://www.rockland.dk
 // @homepageURL https://www.rockland.dk/userscript/misc/artgrab/
 // @supportURL  https://www.rockland.dk/userscript/misc/artgrab/
@@ -51,6 +51,7 @@
 // @match       *://*.cdbaby.com/*
 // @match       *://*.jamendo.com/*
 // @match       *://*.magnatune.com/*
+// @match       *://open.spotify.com/*
 // @grant       GM_registerMenuCommand
 // @require     https://greasyfork.org/scripts/34527/code/GMCommonAPI.js?version=237846
 // @noframes
@@ -87,14 +88,11 @@
 
 // CHANGELOG - The most important updates/versions:
 let changelog = [
+    {version: '2020.05.30.0', description: 'Adding partial support for open.spotify.com. On album-pages (regular albums, not playlists) it can typically replace 232X232 with 640x640pixels cover art. Thanks to kopytko95 for tip making this possible.'},
     {version: '2020.04.25.0', description: 'iTunes / Apple Music fix for updated site.'},
     {version: '2019.11.03.0', description: 'Last.FM fix. Mouseover and right-click should work again now.'},
     {version: '2019.10.26.0', description: 'Last.FM partial fix. Now again able to find fullsize images. But mouseover with dimensions might not show and sometimes image is "protected" behind a layer.'},
-    {version: '2019.06.02.0', description: 'In some countries itunes.apple.com now forwards to music.apple.com. Support both.'},
-    {version: '2018.07.22.0', description: 'Fix for broken cdbaby support.'},
     {version: '2018.02.10.0', description: 'Adding support for Deezer, Qobuz and Trackitdown (All tested on public pages only). Big thanks to Anton Fedorov for tips making this possible.'},
-    {version: '2017.10.29.0', description: 'Using my new GM Common API for Greasemonkey 4 WebExtension compatibility (For setting menu-items).'},
-    {version: '2017.10.09.0', description: 'Adding HTML5 contextmenu (Currently only supported in Firefox). Handy for the upcoming new Greasemonkey 4 WebExtension which probably won\'t support the normal userscript commands menu.'},
     {version: '2017.06.26.1', description: 'Currently grabbing covers directly from the iTunes website doesn\'t work when using Stig\'s Art Grabr as a *bookmarklet*. It does however still works with script installed and used as a *userscript*. Also grabbing iTunes covers indirectly via musicdiner.com, fnd.io and labs.stephenou.com/itunes should work both ways.'},
     {version: '2016.06.20.0', description: '1st official release version.'},
     {version: '2016.06.19.0', description: 'First userscript version (Converted from my old BCA bookmarklet).'}
@@ -139,7 +137,8 @@ function runGrabr() {
         [/play\.google\.com/, /googleusercontent\.com.*\=w\d{3}/i, /\=w\d{3}$/gi, "=w1200"],
         [/qobuz\.com/, /static\.qobuz\.com\/images\/covers\//i, /_\d{2,3}\.jpg/gi, "_max.jpg"],
         [/trackitdown\.net/, /\.cloudfront.net\/graphics\//i, /__\w+\.png/gi, "_original.jpg"],
-        [/soundcloud\./, /t\d\d0x\d\d0\./i, /t\d\d0x\d\d0\./gi, "original."]];
+        [/soundcloud\./, /t\d\d0x\d\d0\./i, /t\d\d0x\d\d0\./gi, "original."],
+        [/open\.spotify\.com/, /i\.scdn\.co\/image\/ab67616d0000/i, /ab67616d00001e02/gi, "ab67616d0000b273"]];
     /* https://affiliate.itunes.apple.com/resources/documentation/itunes-store-web-service-search-api/ */
     let aEv = function (e,ev,f,c) {
         c=(c)?c:false;
