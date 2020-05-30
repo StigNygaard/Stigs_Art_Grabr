@@ -2,7 +2,7 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2020.05.30.0
+// @version     2020.05.30.1
 // @author      Stig Nygaard, https://www.rockland.dk
 // @homepageURL https://www.rockland.dk/userscript/misc/artgrab/
 // @supportURL  https://www.rockland.dk/userscript/misc/artgrab/
@@ -88,7 +88,7 @@
 
 // CHANGELOG - The most important updates/versions:
 let changelog = [
-    {version: '2020.05.30.0', description: 'Adding partial support for open.spotify.com. On album-pages (regular albums, not playlists) it can typically replace 232X232 with 640x640pixels cover art. Thanks to kopytko95 for tip making this possible.'},
+    {version: '2020.05.30.1', description: 'Adding partial support for open.spotify.com. On album-pages (might not work on all playlists) it can typically replace 232X232 or 464x464 with 640x640pixels cover art. Thanks to kopytko95 for tip making this possible.'},
     {version: '2020.04.25.0', description: 'iTunes / Apple Music fix for updated site.'},
     {version: '2019.11.03.0', description: 'Last.FM fix. Mouseover and right-click should work again now.'},
     {version: '2019.10.26.0', description: 'Last.FM partial fix. Now again able to find fullsize images. But mouseover with dimensions might not show and sometimes image is "protected" behind a layer.'},
