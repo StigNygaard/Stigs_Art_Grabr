@@ -2,7 +2,7 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2020.05.30.1
+// @version     2020.07.02.0
 // @author      Stig Nygaard, https://www.rockland.dk
 // @homepageURL https://www.rockland.dk/userscript/misc/artgrab/
 // @supportURL  https://www.rockland.dk/userscript/misc/artgrab/
@@ -88,6 +88,7 @@
 
 // CHANGELOG - The most important updates/versions:
 let changelog = [
+    {version: '2020.07.02.0', description: 'Another iTunes/Apple Music fix.'},
     {version: '2020.05.30.1', description: 'Adding partial support for open.spotify.com. On album-pages (might not work on all playlists) it can typically replace 232X232 or 464x464 with 640x640pixels cover art. Thanks to kopytko95 for tip making this possible.'},
     {version: '2020.04.25.0', description: 'iTunes / Apple Music fix for updated site.'},
     {version: '2019.11.03.0', description: 'Last.FM fix. Mouseover and right-click should work again now.'},
@@ -122,6 +123,7 @@ function runGrabr() {
         //[/itunes\.apple\./, /1\d0x1\d0bb\.jpg/i, /\/source\/\d+x\d+bb\.jpg/i, "/source/999999x999999bb-100.jpg"], // fix 2016-11-21
         //[/itunes\.apple\./, /\d{2,}x\d+\w+\.jpe?g/i, /\/source\/\d+x\d+\w+\.jpe?g/i, "/source/999999x999999bb-100.jpg"], // fix 2017-06-23
         //[/(music|itunes)\.apple\./, /\/\d+x\d+w?\.jpe?g$/i, /\/\d+x\d+w?\.jpe?g$/i, "/999999x999999bb-100.jpg"], // fix 2017-10-14 + 2019-06-02
+        [/(music|itunes)\.apple\./, /\/\d+x\d+[a-z]*-\d+\.jpe?g$/i, /\/\d+x\d+[a-z]*-\d+\.jpe?g$/i, "/999999x999999bb-100.jpg"], // fix 2020-07-02 new image naming scheme
         [/(music|itunes)\.apple\./, /\/\d+x\d+bb\.jpe?g$/i, /\/\d+x\d+bb\.jpe?g$/i, "/999999x999999bb-100.jpg"], // fix 2020-04-25
         [/jamendo\./, /1\.\d00\.jpg/i, /1\.\d00\.jpg/gi, "1.0.jpg"],
         [/jamendo\./, /1\.\d00\.png/i, /1\.\d00\.png/gi, "1.0.png"],
