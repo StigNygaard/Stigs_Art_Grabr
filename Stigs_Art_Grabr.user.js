@@ -2,7 +2,7 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2020.07.02.0
+// @version     2020.12.28.0
 // @author      Stig Nygaard, https://www.rockland.dk
 // @homepageURL https://www.rockland.dk/userscript/misc/artgrab/
 // @supportURL  https://www.rockland.dk/userscript/misc/artgrab/
@@ -88,6 +88,7 @@
 
 // CHANGELOG - The most important updates/versions:
 let changelog = [
+    {version: '2020.12.28.0', description: 'Yet another iTunes/Apple Music fix. Musicbrainz changelog appended to pages fix.'},
     {version: '2020.07.02.0', description: 'Another iTunes/Apple Music fix.'},
     {version: '2020.05.30.1', description: 'Adding partial support for open.spotify.com. On album-pages (might not work on all playlists) it can typically replace 232X232 or 464x464 with 640x640pixels cover art. Thanks to kopytko95 for tip making this possible.'},
     {version: '2020.04.25.0', description: 'iTunes / Apple Music fix for updated site.'},
@@ -119,12 +120,10 @@ function runGrabr() {
         [/cdbaby\./, /cdbaby\.name\/.*\.png/i, /\.png/gi, "_large.png"],
         [/deezer\./, /images\/\w{5,9}\/.*\.[jpng]{3}/i, /\/\d{2,3}x\d{2,3}-0{6}-\d{1,2}-0-0\.[jpng]{3}/gi, "/1400x1400-000000-0-0-0.png"],
         [/fnd\.io/, /\/\d{2,}x\d{2,}bb/i, /\/\d{2,}x\d{2,}bb/gi, "/999999x999999bb-100"],
-        //[/itunes\.apple\./, /1\d0x1\d0\./i, /^(.*\/\/)\w+(\d+.mzstatic.com)\/\w+\/\w+\/(\w+\/\w+\/\w+\/\w+\/\w+\/[\w-]+)\/cover\d+x\d+.jpeg$/i, "$1is$2/image/thumb/$3/source/999999x999999bb-100.jpg"], // replace regexp from jesus2099
-        //[/itunes\.apple\./, /1\d0x1\d0bb\.jpg/i, /\/source\/\d+x\d+bb\.jpg/i, "/source/999999x999999bb-100.jpg"], // fix 2016-11-21
-        //[/itunes\.apple\./, /\d{2,}x\d+\w+\.jpe?g/i, /\/source\/\d+x\d+\w+\.jpe?g/i, "/source/999999x999999bb-100.jpg"], // fix 2017-06-23
-        //[/(music|itunes)\.apple\./, /\/\d+x\d+w?\.jpe?g$/i, /\/\d+x\d+w?\.jpe?g$/i, "/999999x999999bb-100.jpg"], // fix 2017-10-14 + 2019-06-02
         [/(music|itunes)\.apple\./, /\/\d+x\d+[a-z]*-\d+\.jpe?g$/i, /\/\d+x\d+[a-z]*-\d+\.jpe?g$/i, "/999999x999999bb-100.jpg"], // fix 2020-07-02 new image naming scheme
         [/(music|itunes)\.apple\./, /\/\d+x\d+bb\.jpe?g$/i, /\/\d+x\d+bb\.jpe?g$/i, "/999999x999999bb-100.jpg"], // fix 2020-04-25
+        [/(music|itunes)\.apple\./, /\/\d+x\d+[a-z]*-\d+\.webp$/i, /\/\d+x\d+[a-z]*-\d+\.webp$/i, "/999999x999999bb-100.webp"], // fix 2020-12-28 webp
+        [/(music|itunes)\.apple\./, /\/\d+x\d+bb\.webp$/i, /\/\d+x\d+bb\.webp$/i, "/999999x999999bb-100.webp"], // fix 2020-12-28 webp
         [/jamendo\./, /1\.\d00\.jpg/i, /1\.\d00\.jpg/gi, "1.0.jpg"],
         [/jamendo\./, /1\.\d00\.png/i, /1\.\d00\.png/gi, "1.0.png"],
         [/labs\.stephenou\.com/, /\/\d{2,3}x\d{2,3}bb/i, /\/\d{2,3}x\d{2,3}bb/gi, "/999999x999999bb-100"],
@@ -153,6 +152,34 @@ function runGrabr() {
         }
     };
     let w = null, n = 0, m = 20, d = document, i=0;
+
+    // General preburner
+    let pictures = document.querySelectorAll("picture");
+    const PURL = /^[^\s,]+/im;
+    pictures.forEach(
+        function(picture, idx) {
+            let img = picture.querySelector("img");
+            let source = picture.querySelector("source");
+            if (img) {
+                // img.removeAttribute("loading");
+                let currentSrc = img.currentSrc;
+                if (source && source.srcset) {
+                    if (!currentSrc || currentSrc.endsWith("1x1.gif") || currentSrc.endsWith("MissingArtworkMusic.svg")) {
+                        let url = source.srcset.match(PURL);
+                        if (url) {
+                            currentSrc = url[0];
+                        }
+                    }
+                }
+                picture.replaceWith(img);
+                if (currentSrc && !(currentSrc.endsWith("1x1.gif") || currentSrc.endsWith("MissingArtworkMusic.svg"))) {
+                    img.src = currentSrc;
+                    img.removeAttribute("loading"); // I don't really understand, but removing loading-attribut at this point seems to work better than doing it earlier?
+                }
+            }
+        }
+    );
+
     // soundcloud pre-burner
     if (d.location.hostname.search(/soundcloud\./) > -1) {
         let spans = document.querySelectorAll("span[style*=background-image]");
@@ -254,15 +281,40 @@ function runGrabr() {
     return void(0);
 }
 
+function createRichElement(tagName, attributes, ...content) {
+    let element = document.createElement(tagName);
+    if (attributes) {
+        for (const [attr, value] of Object.entries(attributes)) {
+            element.setAttribute(attr, value);
+        }
+    }
+    if (content && content.length) {
+        element.append(...content);
+    }
+    return element;
+}
 function showGrabrLog() {
     document.getElementById('grabrlog').style.display = 'block';
 }
-
 if (typeof GM_info === 'object' || (typeof GM === 'object' && typeof GM.info === 'object')) {
     // Running as a userscript - setting up menu items...
     if (!document.getElementById('grabrlog')) {
-        let gmw = '<div id="grabrlog" style="position:fixed;left:0;right:0;top:10em;z-index:3000009;margin-left:auto;margin-right:auto;min-height:8em;width:50%;background-color:#eee;color:#111;border-radius:5px;display:none;padding:1em"><b>Stig\'s Art Grabr changelog</b><ul></ul></div>';
-        document.body.insertAdjacentHTML('beforeend',gmw);
+        let gmwe = createRichElement("div", {id: "grabrlog"}, createRichElement("b", {},"Stig's Art Grabr changelog"), document.createElement("ul"));
+        gmwe.style.position = "fixed";
+        gmwe.style.left = "0";
+        gmwe.style.right = "0";
+        gmwe.style.top = "10em";
+        gmwe.style.zIndex = "3000009";
+        gmwe.style.marginLeft = "auto";
+        gmwe.style.marginRight = "auto";
+        gmwe.style.minHeight = "8em";
+        gmwe.style.width = "50%";
+        gmwe.style.backgroundColor = "#eee";
+        gmwe.style.color = "#111";
+        gmwe.style.borderRadius = "5px";
+        gmwe.style.display = "none";
+        gmwe.style.padding = "1em";
+        document.body.insertAdjacentElement("beforeend", gmwe);
         document.getElementById('grabrlog').addEventListener('click',function(){this.style.display = 'none';return false;}, false);
         let list = document.querySelector('div#grabrlog ul');
         let lcontent = '';
