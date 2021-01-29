@@ -2,7 +2,7 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2020.12.28.0
+// @version     2021.01.29.0
 // @author      Stig Nygaard, https://www.rockland.dk
 // @homepageURL https://www.rockland.dk/userscript/misc/artgrab/
 // @supportURL  https://www.rockland.dk/userscript/misc/artgrab/
@@ -53,6 +53,7 @@
 // @match       *://*.magnatune.com/*
 // @match       *://open.spotify.com/*
 // @grant       GM_registerMenuCommand
+// @grant       GM.registerMenuCommand
 // @require     https://greasyfork.org/scripts/34527/code/GMCommonAPI.js?version=237846
 // @noframes
 // ==/UserScript==
@@ -69,25 +70,20 @@
  *      from MusicBrainz/GitHub/GreasyFork user jesus2099 who has made a lot of userscripts
  *      (especially for MusicBrainz users): https://greasyfork.org/users/2206-jesus2099
  *
- *      Should work with all popular browsers and userscript managers. Compatibility with the new
- *      Greasemonkey 4 WebExtension and Firefox 57+ is done with the help of GM Common API:
- *
- *      https://github.com/StigNygaard/GMCommonAPI.js
- *      https://greasyfork.org/scripts/34527-gmcommonapi-js
- *
  *      To run this script as a bookmarklet (running latest GreasyFork hosted version), use:
  *      javascript:(function(){document.body.appendChild(document.createElement("script")).src="https://greasyfork.org/scripts/20771/code/StigsArtGrabr.js?t="+Date.now();}())
  *
  *      NOTICE:
- *      1)  On iTunes Stig's Art Grabr will with most webbrowsers only work when used as a
+ *      1)  On iTunes, with most browsers Stig's Art Grabr will only work when used as a
  *          userscript, and NOT when used as a bookmarklet (CSP restriction).
- *      2)  When using the userscript with Greasemonkey 4, you use the right-click context menu
- *          on webpage to search for big cover art. With other userscript managers, look in the
- *          dropdown menu on the managers toolbar icon.
+ *      2)  In Firefox Art Grabr used to make script commands available via page contextmenu, however from Firefox 85 support for this is officially unavailable.
+ *          Instead GM4.11 introduces native script commands menus, very similar to how it works in GM3.x and in Tampermonkey. If however you miss the commands in page
+ *          context menu, you can (at least for a while) add back support for this in Firefox by going to about:config and set item dom.menuitem.enabled to true.
  */
 
 // CHANGELOG - The most important updates/versions:
 let changelog = [
+    {version: '2021.01.29.0', description: 'Support for the new native menus (GM.registerMenuCommand) in Greasemonkey 4.11.'},
     {version: '2020.12.28.0', description: 'Yet another iTunes/Apple Music fix. Musicbrainz changelog appended to pages fix.'},
     {version: '2020.07.02.0', description: 'Another iTunes/Apple Music fix.'},
     {version: '2020.05.30.1', description: 'Adding partial support for open.spotify.com. On album-pages (might not work on all playlists) it can typically replace 232X232 or 464x464 with 640x640pixels cover art. Thanks to kopytko95 for tip making this possible.'},
@@ -95,9 +91,7 @@ let changelog = [
     {version: '2019.11.03.0', description: 'Last.FM fix. Mouseover and right-click should work again now.'},
     {version: '2019.10.26.0', description: 'Last.FM partial fix. Now again able to find fullsize images. But mouseover with dimensions might not show and sometimes image is "protected" behind a layer.'},
     {version: '2018.02.10.0', description: 'Adding support for Deezer, Qobuz and Trackitdown (All tested on public pages only). Big thanks to Anton Fedorov for tips making this possible.'},
-    {version: '2017.06.26.1', description: 'Currently grabbing covers directly from the iTunes website doesn\'t work when using Stig\'s Art Grabr as a *bookmarklet*. It does however still works with script installed and used as a *userscript*. Also grabbing iTunes covers indirectly via musicdiner.com, fnd.io and labs.stephenou.com/itunes should work both ways.'},
-    {version: '2016.06.20.0', description: '1st official release version.'},
-    {version: '2016.06.19.0', description: 'First userscript version (Converted from my old BCA bookmarklet).'}
+    {version: '2016.06.20.0', description: '1st official release version.'}
 ];
 
 function runGrabr() {
