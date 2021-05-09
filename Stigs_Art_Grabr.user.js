@@ -2,7 +2,7 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2021.01.29.0
+// @version     2021.05.09.0
 // @author      Stig Nygaard, https://www.rockland.dk
 // @homepageURL https://www.rockland.dk/userscript/misc/artgrab/
 // @supportURL  https://www.rockland.dk/userscript/misc/artgrab/
@@ -83,6 +83,7 @@
 
 // CHANGELOG - The most important updates/versions:
 let changelog = [
+    {version: '2021.05.09.0', description: 'Generally substitute found ".webp" files with similar named ".jpg" files (assumed available as "fallback"). This currently affects and works for Apple Music/iTunes and Last.FM.'},
     {version: '2021.01.29.0', description: 'Support for the new native menus (GM.registerMenuCommand) in Greasemonkey 4.11.'},
     {version: '2020.12.28.0', description: 'Yet another iTunes/Apple Music fix. Musicbrainz changelog appended to pages fix.'},
     {version: '2020.07.02.0', description: 'Another iTunes/Apple Music fix.'},
@@ -252,7 +253,8 @@ function runGrabr() {
                                     window.location = this.currentSrc;
                                 }
                             });
-                            l[i].src = l[i].currentSrc.replace(w[2], w[3]);
+                            // Lets take the change and do a general substitution of .webp for .jpg on all sites supported!
+                            l[i].src = l[i].currentSrc.replace(w[2], w[3]).replace(/\.webp$/i, ".jpg");
                             if (l[i].srcset) {
                                 l[i].removeAttribute('srcset')
                             }
