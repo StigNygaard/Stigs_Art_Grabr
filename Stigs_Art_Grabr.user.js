@@ -2,7 +2,7 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2021.05.09.0
+// @version     2024.01.06.0
 // @author      Stig Nygaard, https://www.rockland.dk
 // @homepageURL https://www.rockland.dk/userscript/misc/artgrab/
 // @supportURL  https://www.rockland.dk/userscript/misc/artgrab/
@@ -83,6 +83,7 @@
 
 // CHANGELOG - The most important updates/versions:
 let changelog = [
+    {version: '2024.01.06.0', description: 'Should get the actual original upload now on Apple Music/iTunes? Thanks for the help and insisting at https://github.com/StigNygaard/Stigs_Art_Grabr/issues/9 ;-)'},
     {version: '2021.05.09.0', description: 'Generally substitute found ".webp" files with similar named ".jpg" files (assumed available as "fallback"). This currently affects and works for Apple Music/iTunes and Last.FM.'},
     {version: '2021.01.29.0', description: 'Support for the new native menus (GM.registerMenuCommand) in Greasemonkey 4.11.'},
     {version: '2020.12.28.0', description: 'Yet another iTunes/Apple Music fix. Musicbrainz changelog appended to pages fix.'},
@@ -115,15 +116,10 @@ function runGrabr() {
         [/cdbaby\./, /cdbaby\.name\/.*\.png/i, /\.png/gi, "_large.png"],
         [/deezer\./, /images\/\w{5,9}\/.*\.[jpng]{3}/i, /\/\d{2,3}x\d{2,3}-0{6}-\d{1,2}-0-0\.[jpng]{3}/gi, "/1400x1400-000000-0-0-0.png"],
         [/fnd\.io/, /\/\d{2,}x\d{2,}bb/i, /\/\d{2,}x\d{2,}bb/gi, "/999999x999999bb-100"],
-        [/(music|itunes)\.apple\./, /\/\d+x\d+[a-z]*-\d+\.jpe?g$/i, /\/\d+x\d+[a-z]*-\d+\.jpe?g$/i, "/999999x999999bb-100.jpg"], // fix 2020-07-02 new image naming scheme
-        [/(music|itunes)\.apple\./, /\/\d+x\d+bb\.jpe?g$/i, /\/\d+x\d+bb\.jpe?g$/i, "/999999x999999bb-100.jpg"], // fix 2020-04-25
-        [/(music|itunes)\.apple\./, /\/\d+x\d+[a-z]*-\d+\.webp$/i, /\/\d+x\d+[a-z]*-\d+\.webp$/i, "/999999x999999bb-100.webp"], // fix 2020-12-28 webp
-        [/(music|itunes)\.apple\./, /\/\d+x\d+bb\.webp$/i, /\/\d+x\d+bb\.webp$/i, "/999999x999999bb-100.webp"], // fix 2020-12-28 webp
+        [/(music|itunes)\.apple\./, /^https:\/\/[a-z0-9/.-]+\/image\/thumb\/[a-z0-9/.-]+\.[jpegwb]{3,4}\/[a-z0-9-]+\.[jpegwb]{3,4}$/i, /^https:\/\/[a-z0-9/.-]+\/image\/thumb\/([a-z0-9/.-]+\.[jpegwb]{3,4})\/[a-z0-9-]+\.[jpegwb]{3,4}$/gi, "https://a1.mzstatic.com/us/r1000/0/$1"],  // fix 2024
         [/jamendo\./, /1\.\d00\.jpg/i, /1\.\d00\.jpg/gi, "1.0.jpg"],
         [/jamendo\./, /1\.\d00\.png/i, /1\.\d00\.png/gi, "1.0.png"],
         [/labs\.stephenou\.com/, /\/\d{2,3}x\d{2,3}bb/i, /\/\d{2,3}x\d{2,3}bb/gi, "/999999x999999bb-100"],
-        // [/last(fm)?\.[a-z]{2,3}/, /\.lst\.fm\/i\/u\/[a-zA-Z]*\d{2,}\w*\//i, /\.lst\.fm\/i\/u\/[a-z]*\d{2,}\w*\//gi, ".lst.fm/i/u/"],
-        // [/last(fm)?\.[a-z]{2,3}/, /\.akamaized\.net\/i\/u\/[a-zA-Z]*\d{2,}\w*\//i, /\.akamaized\.net\/i\/u\/[a-z]*\d{2,}\w*\//gi, ".akamaized.net/i/u/"],
         [/last(fm)?\.[a-z]{2,3}/, /\.net\/i\/u\/[a-zA-Z]*\d{2,}\w*\//i, /\.net\/i\/u\/[a-z]*\d{2,}\w*\//gi, ".net/i/u/"], // fix 2019-10-26
         [/magnatune\./, /cover_\d{2,3}\./i, /cover_\d{2,3}\./gi, "cover."],
         [/musicbrainz\.org/, /_thumb\d{3}\./i, /_thumb\d{3}\./gi, "."],
