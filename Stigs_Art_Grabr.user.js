@@ -73,12 +73,8 @@
  *      To run this script as a bookmarklet (running latest GreasyFork hosted version), use:
  *      javascript:(function(){document.body.appendChild(document.createElement("script")).src="https://greasyfork.org/scripts/20771/code/StigsArtGrabr.js?t="+Date.now();}())
  *
- *      NOTICE:
- *      1)  On iTunes, with most browsers Stig's Art Grabr will only work when used as a
- *          userscript, and NOT when used as a bookmarklet (CSP restriction).
- *      2)  In Firefox Art Grabr used to make script commands available via page contextmenu, however from Firefox 85 support for this is officially unavailable.
- *          Instead GM4.11 introduces native script commands menus, very similar to how it works in GM3.x and in Tampermonkey. If however you miss the commands in page
- *          context menu, you can (at least for a while) add back support for this in Firefox by going to about:config and set item dom.menuitem.enabled to true.
+ *      NOTICE: On Apple Music (iTunes), with most browsers Stig's Art Grabr will only work when
+ *      used as a userscript, and NOT when used as a bookmarklet (CSP restriction).
  */
 
 // CHANGELOG - The most important updates/versions:
@@ -213,10 +209,10 @@ function runGrabr() {
 
     log('Activated while on ' + d.location.hostname);
     o:
-        for (let v = 0; v < a.length; v++) {
-            if (d.location.hostname.search(a[v][0]) > -1) {
+        for (const patterns of a) {
+            if (d.location.hostname.search(patterns[0]) > -1) {
                 log('Running on ' + d.location.hostname);
-                w = a[v];
+                w = patterns;
                 let l = d.getElementsByTagName("img");
                 if (l) {
                     log('Found ' + l.length + ' image tags');
@@ -249,7 +245,7 @@ function runGrabr() {
                                     window.location = this.currentSrc;
                                 }
                             });
-                            // Lets take the change and do a general substitution of .webp for .jpg on all sites supported!
+                            // Lets take the chance and do a general substitution of .webp for .jpg on all sites supported!
                             l[i].src = l[i].currentSrc.replace(w[2], w[3]).replace(/\.webp$/i, ".jpg");
                             if (l[i].srcset) {
                                 l[i].removeAttribute('srcset')
@@ -268,7 +264,7 @@ function runGrabr() {
             }
         }
     if (w === null) {
-        log('No hits found...');
+        log('No page pattern hits found...');
     }
     return void(0);
 }
