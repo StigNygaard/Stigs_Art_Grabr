@@ -87,7 +87,7 @@ let changelog = [
     {version: '2020.07.02.0', description: 'Another iTunes/Apple Music fix.'},
     {version: '2020.05.30.1', description: 'Adding partial support for open.spotify.com. On album-pages (might not work on all playlists) it can typically replace 232X232 or 464x464 with 640x640pixels cover art. Thanks to kopytko95 for tip making this possible.'},
     {version: '2020.04.25.0', description: 'iTunes / Apple Music fix for updated site.'},
-    {version: '2019.11.03.0', description: 'Last.FM fix. Mouseover and right-click should work again now.'},
+    {version: '2019.11.03.0', description: 'Last.FM fix. Mouseover should work again now.'},
     {version: '2019.10.26.0', description: 'Last.FM partial fix. Now again able to find fullsize images. But mouseover with dimensions might not show and sometimes image is "protected" behind a layer.'},
     {version: '2018.02.10.0', description: 'Adding support for Deezer, Qobuz and Trackitdown (All tested on public pages only). Big thanks to Anton Fedorov for tips making this possible.'},
     {version: '2016.06.20.0', description: '1st official release version.'}
@@ -113,7 +113,7 @@ function runGrabr() {
         [/cdbaby\./, /cdbaby\.name\/.*\.png/i, /\.png/gi, "_large.png"],
         [/deezer\./, /images\/\w{5,9}\/.*\.[jpng]{3}/i, /\/\d{2,3}x\d{2,3}-0{6}-\d{1,2}-0-0\.[jpng]{3}/gi, "/1400x1400-000000-0-0-0.png"],
         [/fnd\.io/, /\/\d{2,}x\d{2,}bb/i, /\/\d{2,}x\d{2,}bb/gi, "/999999x999999bb-100"],
-        [/(music|itunes)\.apple\./, /^https:\/\/[a-z0-9/.-]+\/image\/thumb\/[a-z0-9/.-]+\.(jpg|jpeg|webp|png|avif|jxl|heif|heic)\/[a-z0-9-]+\.[jpegwb]{3,4}$/i, /^https:\/\/[a-z0-9/.-]+\/image\/thumb\/([a-z0-9/.-]+\.[jpgwebnavifxlhc]{3,4})\/[a-z0-9-]+\.[jpegwbavifxl]{3,4}$/gi, "https://a1.mzstatic.com/us/r1000/0/$1"],  // fix 2024
+        [/(music|itunes)\.apple\./, /^https:\/\/[a-z0-9/.-]+\/image\/thumb\/[a-z0-9/.-]+\.(jpg|jpeg|webp|png|avif|jxl|heif|heic)\/[a-z0-9-]+\.[jpegwbavifxl]{3,4}$/i, /^https:\/\/[a-z0-9/.-]+\/image\/thumb\/([a-z0-9/.-]+\.[jpgwebnavifxlhc]{3,4})\/[a-z0-9-]+\.[jpegwbavifxl]{3,4}$/gi, "https://a1.mzstatic.com/us/r1000/0/$1"],  // fix 2024
         [/jamendo\./, /1\.\d00\.jpg/i, /1\.\d00\.jpg/gi, "1.0.jpg"],
         [/jamendo\./, /1\.\d00\.png/i, /1\.\d00\.png/gi, "1.0.png"],
         [/labs\.stephenou\.com/, /\/\d{2,3}x\d{2,3}bb/i, /\/\d{2,3}x\d{2,3}bb/gi, "/999999x999999bb-100"],
@@ -129,17 +129,17 @@ function runGrabr() {
         [/soundcloud\./, /t\d\d0x\d\d0\./i, /t\d\d0x\d\d0\./gi, "original."],
         [/open\.spotify\.com/, /i\.scdn\.co\/image\/ab67616d0000/i, /ab67616d00001e02/gi, "ab67616d0000b273"]];
     /* https://affiliate.itunes.apple.com/resources/documentation/itunes-store-web-service-search-api/ */
-    let aEv = function (e,ev,f,c) {
-        c=(c)?c:false;
-        if(e.addEventListener) {
-            e.addEventListener(ev,f,c);
-        } else if(e.attachEvent) {
-            e.attachEvent("on"+ev,f);
+    let aEv = function(e,ev,f,c) {
+        c = c || false;
+        if (e.addEventListener) {
+            e.addEventListener(ev, f, c);
+        } else if (e.attachEvent) {
+            e.attachEvent("on" + ev, f);
         } else {
-            e["on"+ev]=f;
+            e["on" + ev] = f;
         }
     };
-    let w = null, n = 0, m = 20, d = document, i=0;
+    let w = null, n = 0, m = 20, d = document, i = 0;
 
     // General preburner
     let pictures = document.querySelectorAll("picture");
@@ -151,7 +151,7 @@ function runGrabr() {
             if (img) {
                 // img.removeAttribute("loading");
                 let currentSrc = img.currentSrc;
-                if (source && source.srcset) {
+                if (source?.srcset) {
                     if (!currentSrc || currentSrc.endsWith("1x1.gif") || currentSrc.endsWith("MissingArtworkMusic.svg")) {
                         let url = source.srcset.match(PURL);
                         if (url) {
@@ -171,11 +171,11 @@ function runGrabr() {
     // soundcloud pre-burner
     if (d.location.hostname.search(/soundcloud\./) > -1) {
         let spans = document.querySelectorAll("span[style*=background-image]");
-        for (i = 0; i < spans.length; i++) {
-            if (spans[i].style.backgroundImage) {
-                let imgsrc = spans[i].style.backgroundImage.match(/url[\(\"\u0027]+([^\"\u0027\)]*)[\)\"\u0027]+/)[1];
-                if ((spans[i].getElementsByTagName("img").length === 0) && (imgsrc.match(/t[\d]{3}x[\d]{3}\./) !== null)) {
-                    spans[i].innerHTML = "<img src=\u0027" + imgsrc + "\u0027 alt=\u0027\u0027 style=\u0027width:200px;height:200px;border:none\u0027 />";
+        for (const span of spans) {
+            if (span.style.backgroundImage) {
+                let imgsrc = span.style.backgroundImage.match(/url[\(\"\u0027]+([^\"\u0027\)]*)[\)\"\u0027]+/)[1];
+                if ((span.getElementsByTagName("img").length === 0) && (imgsrc.match(/t[\d]{3}x[\d]{3}\./) !== null)) {
+                    span.innerHTML = "<img src=\u0027" + imgsrc + "\u0027 alt=\u0027\u0027 style=\u0027width:200px;height:200px;border:none\u0027 />";
                 }
             }
         }
@@ -183,28 +183,28 @@ function runGrabr() {
     // itunes/apple music pre-burner
     if (d.location.hostname.search(/\.apple\./) > -1) {
         let overlays = document.querySelectorAll(".artwork-overlay, .lockup__controls, .lockup__contextual-menu-trigger");
-        for (i = 0; i < overlays.length; i++) {
-            overlays[i].parentNode.removeChild(overlays[i]);
+        for (const overlay of overlays) {
+            overlay.parentNode.removeChild(overlay);
         }
     }
     // deezer pre-burner
     if (d.location.hostname.search(/deezer\.com/) > -1) {
         let pics = document.querySelectorAll("figure.thumbnail>div.picture");
-        for (i = 0; i < pics.length; i++) {
-            pics[i].classList.remove('picture');
+        for (const pic of pics) {
+            pic.classList.remove('picture');
         }
     }
     // last.fm pre-burner
     if (d.location.hostname.search(/last(fm)?\.[a-z]{2,3}/) > -1) {
         let elms = document.querySelectorAll(('.album-overview-cover-art-actions'));
-        for (i=0; i < elms.length; i++) {
-            elms[i].parentNode.removeChild(elms[i]);
+        for (const elm of elms) {
+            elm.parentNode.removeChild(elm);
         }
         let imgs = document.querySelectorAll(('a.cover-art img, a.image-list-item img'));
-        for (i=0; i < imgs.length; i++) {
-            imgs[i].style.maxWidth="370px";
-            imgs[i].style.maxHeight="370px";
-            imgs[i].parentNode.parentNode.replaceChild(imgs[i], imgs[i].parentNode); // (newchild, oldchild)
+        for (const img of imgs) {
+            img.style.maxWidth = "370px";
+            img.style.maxHeight = "370px";
+            img.parentNode.parentNode.replaceChild(img, img.parentNode); // (newchild, oldchild)
         }
     }
 
@@ -217,20 +217,20 @@ function runGrabr() {
                 let l = d.getElementsByTagName("img");
                 if (l) {
                     log('Found ' + l.length + ' image tags');
-                    for (i = 0; i < l.length; i++) {
-                        // log(' - ' + l[i].currentSrc + ' . Includes ' + w[1] + '?: ' + ((l[i].currentSrc).search(w[1]) > -1) );
-                        if ((l[i].currentSrc).search(w[1]) > -1) {
-                            l[i].style.border = "1px #FB0 solid";
-                            if (l[i].naturalWidth) {
-                                // l[i].title = "just testing"; // adding dimemsions later on onload image?
-                                // l[i].parentNode.title = "just testing parent"; // adding dimemsions later on onload image?
-                                l[i].onmouseover = function () { // onmouseover via w3 metode. Eller på niveauet over og tage dimension på første img child???
+                    for (const e of l) {
+                        // log(' - ' + e.currentSrc + ' . Includes ' + w[1] + '?: ' + ((e.currentSrc).search(w[1]) > -1) );
+                        if ((e.currentSrc).search(w[1]) > -1) {
+                            e.style.border = "1px #FB0 solid";
+                            if (e.naturalWidth) {
+                                // e.title = "just testing"; // adding dimemsions later on onload image?
+                                // e.parentNode.title = "just testing parent"; // adding dimemsions later on onload image?
+                                e.onmouseover = function () { // onmouseover via w3 metode. Eller på niveauet over og tage dimension på første img child???
                                     this.setAttribute("title", String(this.naturalWidth) + "x" + this.naturalHeight);
                                     this.setAttribute("data-title", String(this.naturalWidth) + "x" + this.naturalHeight);
                                     this.setAttribute("data-tooltip", String(this.naturalWidth) + "x" + this.naturalHeight);
                                 };
                             }
-                            aEv(l[i], "load", function () {
+                            aEv(e, "load", function () {
                                 if (this.style) {
                                     this.style.borderColor = "#F00";
                                     if (this.naturalWidth && this.naturalWidth > 999) {
@@ -241,15 +241,15 @@ function runGrabr() {
                                 // this.title = "Done loading: " + String(this.naturalWidth) + "x" + this.naturalHeight;
                                 // this.parentNode.title = "Done loading: " + String(this.naturalWidth) + "x" + this.naturalHeight;
                             });
-                            aEv(l[i], "click", function () {
+                            aEv(e, "click", function () {
                                 if (this.currentSrc) {
                                     window.location = this.currentSrc;
                                 }
                             });
                             // Lets take the chance and do a general substitution of .webp for .jpg on all sites supported!
-                            l[i].src = l[i].currentSrc.replace(w[2], w[3]).replace(/\.webp$/i, ".jpg");
-                            if (l[i].srcset) {
-                                l[i].removeAttribute('srcset')
+                            e.src = e.currentSrc.replace(w[2], w[3]).replace(/\.webp$/i, ".jpg");
+                            if (e.srcset) {
+                                e.removeAttribute('srcset')
                             }
                             n++;
                             if (n === m) {
@@ -277,18 +277,20 @@ function createRichElement(tagName, attributes, ...content) {
             element.setAttribute(attr, value);
         }
     }
-    if (content && content.length) {
+    if (content?.length) {
         element.append(...content);
     }
     return element;
 }
+
 function showGrabrLog() {
     document.getElementById('grabrlog').style.display = 'block';
 }
+
 if (typeof GM_info === 'object' || (typeof GM === 'object' && typeof GM.info === 'object')) {
     // Running as a userscript - setting up menu items...
     if (!document.getElementById('grabrlog')) {
-        let gmwe = createRichElement("div", {id: "grabrlog"}, createRichElement("b", {},"Stig's Art Grabr changelog"), document.createElement("ul"));
+        let gmwe = createRichElement("div", {id: "grabrlog"}, createRichElement("b", {}, "Stig's Art Grabr changelog"), document.createElement("ul"));
         gmwe.style.position = "fixed";
         gmwe.style.left = "0";
         gmwe.style.right = "0";
@@ -304,11 +306,14 @@ if (typeof GM_info === 'object' || (typeof GM === 'object' && typeof GM.info ===
         gmwe.style.display = "none";
         gmwe.style.padding = "1em";
         document.body.insertAdjacentElement("beforeend", gmwe);
-        document.getElementById('grabrlog').addEventListener('click',function(){this.style.display = 'none';return false;}, false);
+        document.getElementById('grabrlog').addEventListener('click', function() {
+            this.style.display = 'none';
+            return false;
+        }, false);
         let list = document.querySelector('div#grabrlog ul');
         let lcontent = '';
-        for (let i=0; i<Math.min(8,changelog.length); i++) {
-            lcontent += '<li><i>'+changelog[i].version+'</i> - '+changelog[i].description+'</li>';
+        for (let i = 0; i < Math.min(8, changelog.length); i++) {
+            lcontent += '<li><i>' + changelog[i].version + '</i> - ' + changelog[i].description + '</li>';
         }
         list.insertAdjacentHTML('beforeend', lcontent);
     }
