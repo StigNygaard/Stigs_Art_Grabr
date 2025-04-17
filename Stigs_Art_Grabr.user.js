@@ -2,7 +2,7 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2024.01.07.0
+// @version     2025.04.17.0
 // @author      Stig Nygaard, https://www.rockland.dk
 // @homepageURL https://www.rockland.dk/userscript/misc/artgrab/
 // @supportURL  https://www.rockland.dk/userscript/misc/artgrab/
@@ -79,6 +79,7 @@
 
 // CHANGELOG - The most important updates/versions:
 let changelog = [
+    {version: '2025.04.17.0', description: 'Bigger artwork sizes from open.spotify.com. Thanks kopytko95.'},
     {version: '2024.01.07.0', description: 'Fix for yesterdays updated apple music support - now handling more original image formats.'},
     {version: '2024.01.06.0', description: 'Should get the actual original upload now on Apple Music/iTunes? Thanks for the help and insisting at https://github.com/StigNygaard/Stigs_Art_Grabr/issues/9 ;-)'},
     {version: '2021.05.09.0', description: 'Generally substitute found ".webp" files with similar named ".jpg" files (assumed available as "fallback"). This currently affects and works for Apple Music/iTunes and Last.FM.'},
@@ -127,7 +128,7 @@ function runGrabr() {
         [/qobuz\.com/, /static\.qobuz\.com\/images\/covers\//i, /_\d{2,3}\.jpg/gi, "_max.jpg"],
         [/trackitdown\.net/, /\.cloudfront.net\/graphics\//i, /__\w+\.png/gi, "_original.jpg"],
         [/soundcloud\./, /t\d\d0x\d\d0\./i, /t\d\d0x\d\d0\./gi, "original."],
-        [/open\.spotify\.com/, /i\.scdn\.co\/image\/ab67616d0000/i, /ab67616d00001e02/gi, "ab67616d0000b273"]];
+        [/open\.spotify\.com/, /i\.scdn\.co\/image\/ab67616d0000/i, /ab67616d00001e02/gi, "ab67616d000082c1"]];
     /* https://affiliate.itunes.apple.com/resources/documentation/itunes-store-web-service-search-api/ */
     let aEv = function(e,ev,f,c) {
         c = c || false;
