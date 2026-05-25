@@ -2,7 +2,7 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2025.04.17.0
+// @version     2026.05.25.0
 // @author      Stig Nygaard, https://www.rockland.dk
 // @homepageURL https://www.rockland.dk/userscript/misc/artgrab/
 // @supportURL  https://www.rockland.dk/userscript/misc/artgrab/
@@ -79,6 +79,7 @@
 
 // CHANGELOG - The most important updates/versions:
 let changelog = [
+    {version: '2026.05.25.0', description: 'Fixing Deezer support.'},
     {version: '2025.04.17.0', description: 'Bigger artwork sizes from open.spotify.com. Thanks kopytko95.'},
     {version: '2024.01.07.0', description: 'Fix for yesterdays updated apple music support - now handling more original image formats.'},
     {version: '2024.01.06.0', description: 'Should get the actual original upload now on Apple Music/iTunes? Thanks for the help and insisting at https://github.com/StigNygaard/Stigs_Art_Grabr/issues/9 ;-)'},
@@ -112,7 +113,7 @@ function runGrabr() {
         [/cdbaby\./, /cdbaby\.name\/.*_small\.[jpgn]{3}/i, /_small\./gi, "."],
         [/cdbaby\./, /cdbaby\.name\/.*\.jpg/i, /\.jpg/gi, "_large.jpg"],
         [/cdbaby\./, /cdbaby\.name\/.*\.png/i, /\.png/gi, "_large.png"],
-        [/deezer\./, /images\/\w{5,9}\/.*\.[jpng]{3}/i, /\/\d{2,3}x\d{2,3}-0{6}-\d{1,2}-0-0\.[jpng]{3}/gi, "/1400x1400-000000-0-0-0.png"],
+        [/deezer\./, /images\/\w{5,9}\/.*\.[jpng]{3}/i, /\/\d{2,3}x\d{2,3}(-0{6}-\d{1,2}-0-0)?\.[jpng]{3}/gi, "/1400x0-000000-100-0-0.png"],
         [/fnd\.io/, /\/\d{2,}x\d{2,}bb/i, /\/\d{2,}x\d{2,}bb/gi, "/999999x999999bb-100"],
         [/(music|itunes)\.apple\./, /^https:\/\/[a-z0-9/.-]+\/image\/thumb\/[a-z0-9/.-]+\.(jpg|jpeg|webp|png|avif|jxl|heif|heic)\/[a-z0-9-]+\.[jpegwbavifxl]{3,4}$/i, /^https:\/\/[a-z0-9/.-]+\/image\/thumb\/([a-z0-9/.-]+\.[jpgwebnavifxlhc]{3,4})\/[a-z0-9-]+\.[jpegwbavifxl]{3,4}$/gi, "https://a1.mzstatic.com/us/r1000/0/$1"],  // fix 2024
         [/jamendo\./, /1\.\d00\.jpg/i, /1\.\d00\.jpg/gi, "1.0.jpg"],
