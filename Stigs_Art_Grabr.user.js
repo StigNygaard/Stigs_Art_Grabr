@@ -2,7 +2,7 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2026.05.25.0
+// @version     2026.07.12.0
 // @author      Stig Nygaard, https://www.rockland.dk
 // @homepageURL https://www.rockland.dk/userscript/misc/artgrab/
 // @supportURL  https://www.rockland.dk/userscript/misc/artgrab/
@@ -78,7 +78,8 @@
  */
 
 // CHANGELOG - The most important updates/versions:
-let changelog = [
+globalThis.changelog = [
+    {version: '2026.07.12.0', description: 'Minor compatibility fixes.'},
     {version: '2026.05.25.0', description: 'Fixing Deezer support.'},
     {version: '2025.04.17.0', description: 'Bigger artwork sizes from open.spotify.com. Thanks kopytko95.'},
     {version: '2024.01.07.0', description: 'Fix for yesterdays updated apple music support - now handling more original image formats.'},
@@ -289,7 +290,7 @@ function showGrabrLog() {
     document.getElementById('grabrlog').style.display = 'block';
 }
 
-if (typeof GM_info === 'object' || (typeof GM === 'object' && typeof GM.info === 'object')) {
+if (typeof GM_info === 'object' || ((typeof GM === 'object' || typeof GM === 'function') && typeof GM.info === 'object')) {
     // Running as a userscript - setting up menu items...
     if (!document.getElementById('grabrlog')) {
         let gmwe = createRichElement("div", {id: "grabrlog"}, createRichElement("b", {}, "Stig's Art Grabr changelog"), document.createElement("ul"));
@@ -314,8 +315,8 @@ if (typeof GM_info === 'object' || (typeof GM === 'object' && typeof GM.info ===
         }, false);
         let list = document.querySelector('div#grabrlog ul');
         let lcontent = '';
-        for (let i = 0; i < Math.min(8, changelog.length); i++) {
-            lcontent += '<li><i>' + changelog[i].version + '</i> - ' + changelog[i].description + '</li>';
+        for (let i = 0; i < Math.min(8, globalThis.changelog.length); i++) {
+            lcontent += '<li><i>' + globalThis.changelog[i].version + '</i> - ' + globalThis.changelog[i].description + '</li>';
         }
         list.insertAdjacentHTML('beforeend', lcontent);
     }
