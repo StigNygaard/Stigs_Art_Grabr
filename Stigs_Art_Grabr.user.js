@@ -2,7 +2,7 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2026.07.22.0
+// @version     2026.07.22.1
 // @author      Stig Nygaard, https://www.rockland.dk
 // @homepageURL https://www.rockland.dk/userscript/misc/artgrab/
 // @supportURL  https://www.rockland.dk/userscript/misc/artgrab/
@@ -78,7 +78,7 @@
 
 // CHANGELOG - The most important updates/versions:
 globalThis.changelog = [
-    {version: '2026.07.22.0', description: 'Remove dependency on GMC helper script'},
+    {version: '2026.07.22.1', description: 'Improvements to soundcloud support (but still issues). Remove dependency on GMC helper script'},
     {version: '2026.07.12.0', description: 'Minor compatibility fixes.'},
     {version: '2026.05.25.0', description: 'Fixing Deezer support.'},
     {version: '2025.04.17.0', description: 'Bigger artwork sizes from open.spotify.com. Thanks kopytko95.'},
@@ -103,6 +103,17 @@ function runGrabr() {
             window.console.log(s);
         }
     };
+
+    if (document.location.hostname.search(/soundcloud\./) > -1) {
+        // Clumpsy soundcloud pre-pre-burner (workaround if/when page designed with stupid iframe embedded main content)
+        let iframeDoc = document.querySelector("iframe.webiIframe:not(.sc-hidden)")?.contentWindow?.document;
+        if (iframeDoc) {
+            if (window.confirm('ArtGrabr: Open alternative version of this page in a new browser tab or window? Please re-do ArtGrabr Cover-art Search on the new page...\n(Some browsers or extensions might block opening the new tab/window - you might need to change some setting to allow opening "popup windows" on soundcloud.com)')) {
+                globalThis.open(iframeDoc.location);
+            }
+        }
+    }
+
     // [ page pattern, search for img patterns, replace this, with this ]
     let a = [[/45cat\./, /-s\.jpg/i, /-s\.jpg/gi, ".jpg"],
         [/45cat\./, /-s\.png/i, /-s\.png/gi, ".png"],
@@ -130,6 +141,7 @@ function runGrabr() {
         [/qobuz\.com/, /static\.qobuz\.com\/images\/covers\//i, /_\d{2,3}\.jpg/gi, "_max.jpg"],
         [/trackitdown\.net/, /\.cloudfront.net\/graphics\//i, /__\w+\.png/gi, "_original.jpg"],
         [/soundcloud\./, /t\d\d0x\d\d0\./i, /t\d\d0x\d\d0\./gi, "original."],
+        // [/soundcloud\./, /t\d\d0x\d\d0\./i, /t\d\d0x\d\d0\./gi, "large."], // sometimes better, but with its own weirdness
         [/open\.spotify\.com/, /i\.scdn\.co\/image\/ab67616d0000/i, /ab67616d00001e02/gi, "ab67616d000082c1"]];
     /* https://affiliate.itunes.apple.com/resources/documentation/itunes-store-web-service-search-api/ */
     let aEv = function(e,ev,f,c) {
