@@ -2,7 +2,7 @@
 // @name        Stig's Art Grabr
 // @namespace   dk.rockland.userscript.misc.artgrab
 // @description Grabbing big high resolution album cover-art from various sites
-// @version     2026.07.12.0
+// @version     2026.07.22.0
 // @author      Stig Nygaard, https://www.rockland.dk
 // @homepageURL https://www.rockland.dk/userscript/misc/artgrab/
 // @supportURL  https://www.rockland.dk/userscript/misc/artgrab/
@@ -54,7 +54,6 @@
 // @match       *://open.spotify.com/*
 // @grant       GM_registerMenuCommand
 // @grant       GM.registerMenuCommand
-// @require     https://greasyfork.org/scripts/34527/code/GMCommonAPI.js?version=237846
 // @noframes
 // ==/UserScript==
 
@@ -79,6 +78,7 @@
 
 // CHANGELOG - The most important updates/versions:
 globalThis.changelog = [
+    {version: '2026.07.22.0', description: 'Remove dependency on GMC helper script'},
     {version: '2026.07.12.0', description: 'Minor compatibility fixes.'},
     {version: '2026.05.25.0', description: 'Fixing Deezer support.'},
     {version: '2025.04.17.0', description: 'Bigger artwork sizes from open.spotify.com. Thanks kopytko95.'},
@@ -290,6 +290,29 @@ function showGrabrLog() {
     document.getElementById('grabrlog').style.display = 'block';
 }
 
+function registerMenuCommand(caption, commandFunc, options) {
+    if (typeof options === 'string') {
+        options = {'accessKey': options};
+    } else if (typeof options === 'undefined') {
+        options = {};
+    }
+    if (!options['disabled']) {
+        let prefix = '';
+        if (options['type'] === 'radio') {
+            prefix = options['checked'] ? '\u26AB ' : '\u26AA '; // ⚫/⚪
+        } else if (options['type'] === 'checkbox') {
+            prefix = options['checked'] ? '\u2B1B ' : '\u2B1C '; // ⬛/⬜
+        }
+        if (typeof GM_registerMenuCommand === 'function') {
+            // Supported by most userscript managers, but NOT with Greasemonkey 4 WebExtension
+            GM_registerMenuCommand(prefix + caption, commandFunc, options['accessKey']);
+        } else if (typeof GM === 'object' && GM !== null && typeof GM.registerMenuCommand === 'function') {
+            // NOT implemented in Greasemonkey 4.0 WebExtension, but if later?...
+            GM.registerMenuCommand(prefix + caption, commandFunc, options['accessKey']);
+        }
+    }
+}
+
 if (typeof GM_info === 'object' || ((typeof GM === 'object' || typeof GM === 'function') && typeof GM.info === 'object')) {
     // Running as a userscript - setting up menu items...
     if (!document.getElementById('grabrlog')) {
@@ -320,8 +343,8 @@ if (typeof GM_info === 'object' || ((typeof GM === 'object' || typeof GM === 'fu
         }
         list.insertAdjacentHTML('beforeend', lcontent);
     }
-    GMC.registerMenuCommand("Search big size cover art", runGrabr, "a");
-    GMC.registerMenuCommand("Changelog", showGrabrLog, "l");
+    registerMenuCommand("Search big size cover art", runGrabr, "a");
+    registerMenuCommand("Changelog", showGrabrLog, "l");
 } else {
     // Started from bookmarklet!
     runGrabr();
